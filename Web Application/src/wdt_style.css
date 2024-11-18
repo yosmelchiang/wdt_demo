@@ -1,0 +1,78 @@
+body {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Calibri', monospace;
+    color: #212529;
+}
+
+/* Logo and header */
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.header img {
+    max-width: 200px;
+}
+
+/* Staff members: Table */
+.staff-members {
+  display: flex;
+  flex-direction: column;
+  justify-self: center;
+  text-align: center;
+}
+
+.staff-members table {
+  border: thin solid #212529;
+  border-collapse: separate;
+  border-spacing: 5px;
+  border-radius: 10px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Staff members: Table Header */
+.staff-members table th {
+  border: thin solid #212529;
+  background-color: #0e8ea8;
+  color: #fff;
+  font-family: 'Consolas', monospace;
+  padding: 20px;
+}
+
+.staff-members table td {
+  border: thin solid #212529;
+  background-color: #83d1e1;
+  color: #212529;
+  font-family: 'Calibri', monospace;
+  padding: 20px;
+}
+
+/* Button styling */
+.table-buttons {
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+#btn-confirm {
+  color: #fff;
+  background-color: #198754;
+  font-family: 'Consolas', monospace;
+}
+
+#btn-cancel {
+  color: #fff;
+  background-color: #dc3545;
+  font-family: 'Consolas', monospace;
+}
