@@ -48,21 +48,23 @@ logo {
 /* 
 
 content {
-    own flexbox container so can add some nice alignment
+    own flexbox container so we can add some nice alignment.
 }
 
-staff table {
-    table: applied company rules to border style and color
-    table header: applied company rules to font type, font color and background color
-    table cells: applied company rules to font type, font color and background color
+tables {
+    table: applied company rules to border style and color.
+    table header: applied company rules to font type, font color and background color.
+    table cells: applied company rules to font type, font color and background color.
 }
 
-staff table buttons {
-    buttons: own flexbox container so we can align it nicely
-    buttons style: applied company rules to font type and background color
+table buttons {
+    buttons: own flexbox container so we can align it nicely.
+    buttons style: applied company rules to font type and background color.
 }
 
 */
+
+/* Main content, tables and the buttons are placed inside this */
 .content {
   display: flex;
   flex-direction: column;
@@ -70,6 +72,7 @@ staff table buttons {
   text-align: center;
 }
 
+/* Table */
 .content table {
   border: thin solid #212529;
   border-collapse: separate;
@@ -79,7 +82,7 @@ staff table buttons {
   overflow: hidden;
 }
 
-/* Staff Table Header */
+/* Table Header */
 .content table th {
   border: thin solid #212529;
   background-color: #0e8ea8;
@@ -88,6 +91,7 @@ staff table buttons {
   padding: 20px;
 }
 
+/* Table Cells */
 .content table td {
   border: thin solid #212529;
   background-color: #83d1e1;
@@ -115,13 +119,9 @@ staff table buttons {
   font-family: 'Consolas', monospace;
 }
 
-
-
-
-
-
+/* Footer */
 .footer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
