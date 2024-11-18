@@ -1,30 +1,64 @@
+/* Main body and container configurations */
+/* 
+body { 
+    margin: basic styling that removes default margin applied by browser.
+    box-sizing: changes the way height and width of elements are calculated including padding and borders.
+}
+
+.container {
+    we are using flexbox here to make sure things look decent on the page.
+    we are also applying company rules on font and font color.
+}
+*/
 body {
   margin: 0;
   box-sizing: border-box;
 }
 
-
 .container {
-    display: flex;
-    flex-direction: column;
-    font-family: 'Calibri', monospace;
-    color: #212529;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Calibri', monospace;
+  color: #212529;
 }
 
 /* Logo and header */
+/* 
+header {
+    using flexbox for nice centered alignment.
+}
+
+logo {
+    limiting max with for company logo to 200px.
+}
+*/
 .header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    text-align: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
 }
 
 .header img {
-    max-width: 200px;
+  max-width: 200px;
 }
 
-/* Staff members: Table */
+/* Staff Table */
+/* 
+staff table {
+    staff-members: own flexbox container so can add some nice alignment
+    staff-members table: applied company rules to border style and color
+    staff-members table header: applied company rules to font type, font color and background color
+    staff-members table cells: applied company rules to font type, font color and background color
+}
+
+staff table buttons {
+    buttons: own flexbox container so we can align it nicely
+    buttons style: applied company rules to font type and background color
+}
+
+*/
 .staff-members {
   display: flex;
   flex-direction: column;
@@ -41,7 +75,7 @@ body {
   overflow: hidden;
 }
 
-/* Staff members: Table Header */
+/* Staff Table Header */
 .staff-members table th {
   border: thin solid #212529;
   background-color: #0e8ea8;
