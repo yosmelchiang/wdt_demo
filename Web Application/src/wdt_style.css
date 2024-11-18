@@ -22,6 +22,41 @@ body {
   color: #212529;
 }
 
+/* Navbar */
+
+.navbar-items a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  color: #fff;
+  text-decoration: none;
+  position: relative;
+}
+
+.navbar-items {
+  display: flex;
+  flex-direction: row;
+  font-family: 'Consolas', monospace;
+
+  background-color: #0e8ea8;
+}
+
+.dropdown-inventory, .dropdown-orders {
+  display: none;
+  font-family: 'Consolar', monospace;
+  background-color: #83d1e1;
+  color: #212529;
+  position: absolute;
+  min-width: 100%;
+}
+
+.dropdown:hover .dropdown-inventory,
+.dropdown:hover .dropdown-orders {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Logo and header */
 /* 
 header {
