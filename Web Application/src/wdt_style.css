@@ -44,13 +44,17 @@ logo {
   max-width: 200px;
 }
 
-/* Staff Table */
+/* Main Content */
 /* 
+
+content {
+    own flexbox container so can add some nice alignment
+}
+
 staff table {
-    staff-members: own flexbox container so can add some nice alignment
-    staff-members table: applied company rules to border style and color
-    staff-members table header: applied company rules to font type, font color and background color
-    staff-members table cells: applied company rules to font type, font color and background color
+    table: applied company rules to border style and color
+    table header: applied company rules to font type, font color and background color
+    table cells: applied company rules to font type, font color and background color
 }
 
 staff table buttons {
@@ -59,14 +63,14 @@ staff table buttons {
 }
 
 */
-.staff-members {
+.content {
   display: flex;
   flex-direction: column;
   justify-self: center;
   text-align: center;
 }
 
-.staff-members table {
+.content table {
   border: thin solid #212529;
   border-collapse: separate;
   border-spacing: 5px;
@@ -76,7 +80,7 @@ staff table buttons {
 }
 
 /* Staff Table Header */
-.staff-members table th {
+.content table th {
   border: thin solid #212529;
   background-color: #0e8ea8;
   color: #fff;
@@ -84,7 +88,7 @@ staff table buttons {
   padding: 20px;
 }
 
-.staff-members table td {
+.content table td {
   border: thin solid #212529;
   background-color: #83d1e1;
   color: #212529;
@@ -96,7 +100,7 @@ staff table buttons {
 .table-buttons {
   padding: 5px;
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;
   justify-content: space-between;
 }
 #btn-confirm {
@@ -109,4 +113,15 @@ staff table buttons {
   color: #fff;
   background-color: #dc3545;
   font-family: 'Consolas', monospace;
+}
+
+
+
+
+
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

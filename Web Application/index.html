@@ -25,16 +25,17 @@
   </head>
   <body>
     <div class="container">
+      <!-- Logo and Header -->
+      <div class="header">
+        <img src="../Company logo.png" alt="company-logo" />
 
-        <div class="header">
-            <img src="../Company logo.png" alt="company-logo" />
-      
-            <h1>Reception Management Dashboard</h1>
-        </div>
+        <h1>Reception Management Dashboard</h1>
+      </div>
 
-      <div class="staff-members">
-        <h1>Staff</h1>
+      <div class="content">
+        <!-- Staff table -->
         <table>
+          <h1>Staff</h1>
           <thead>
             <tr>
               <th>Picture</th>
@@ -66,6 +67,87 @@
           <button id="btn-confirm">In</button>
           <button id="btn-cancel">Out</button>
         </div>
+
+        <!-- Schedule Table -->
+        <table>
+          <h1>Schedule Delivery</h1>
+          <thead>
+            <tr>
+              <th>Vehicle:</th>
+              <th>Name:</th>
+              <th>Surname:</th>
+              <th>Telephone:</th>
+              <th>Adress:</th>
+              <th>Return time</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                <select name="vehicle">
+                  <option value="item1">item 1</option>
+                  <option value="item2">item 2</option>
+                </select>
+              </td>
+              <td>
+                <input type="text" id="fname" name="fname" />
+              </td>
+              <td>
+                <input type="text" id="lname" name="lname" />
+              </td>
+              <td>
+                <input type="number" id="phone" name="phone" />
+              </td>
+              <td>
+                <input type="text" id="adress" name="adress" />
+              </td>
+              <td>
+                <input type="time" id="rtime" name="rtime" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-buttons">
+          <button id="btn-confirm">Add</button>
+        </div>
+
+        <!-- Delivery Table -->
+        <table>
+          <h1>Delivery Board</h1>
+          <thead>
+            <tr>
+              <th>Vehicle:</th>
+              <th>Name:</th>
+              <th>Surname:</th>
+              <th>Telephone:</th>
+              <th>Adress:</th>
+              <th>Return time</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>_____</td>
+              <td>_____</td>
+              <td>_____</td>
+              <td>_____</td>
+              <td>_____</td>
+              <td>_____</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-buttons">
+        <button id="btn-cancel">clear</button>
+      </div>
+
+      <div class="footer">
+        <footer>
+          <h3>Date and time</h3>
+        </footer>
       </div>
     </div>
   </body>
