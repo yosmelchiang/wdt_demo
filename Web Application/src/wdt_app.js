@@ -92,7 +92,7 @@ function rowSelectedBg() {
  * @returns {Number} - If Date is less than 10, Returns the original number with a Zero concatenated to it
  */
 function addZero(i) {
-  return i < 10 ? 0 + 1 : i;
+  return i < 10 ? `0${i}` : `${i}`;
 }
 
 //Format current time in hours and minutes as well as add leading zero
@@ -112,6 +112,7 @@ function createReturnTimeCalculator(baseMinutes) {
     const totalMinutes = baseMinutes + additionalMinutes;
     const hours = parseInt(totalMinutes / 60);
     const minutes = Math.round((totalMinutes / 60 - hours) * 60);
+    console.log('minutes:', minutes);
     return `${addZero(hours)}:${addZero(minutes)}`;
   };
 }
