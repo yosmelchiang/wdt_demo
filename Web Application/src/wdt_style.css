@@ -40,21 +40,36 @@ body {
   font-family: 'Consolas', monospace;
 
   background-color: #0e8ea8;
+  color: #212529
 }
 
 .dropdown-inventory, .dropdown-orders {
   display: none;
   font-family: 'Consolar', monospace;
   background-color: #83d1e1;
-  color: #212529;
   position: absolute;
   min-width: 100%;
+}
+
+.dropdown-inventory a, .dropdown-orders a {
+    color: #000;
 }
 
 .dropdown:hover .dropdown-inventory,
 .dropdown:hover .dropdown-orders {
   display: flex;
   flex-direction: column;
+  animation-name: onHoverBg;
+  animation-duration: 1s;
+}
+
+@keyframes onHoverBg {
+    0% {
+        background-color: #3e3c3c;
+    }
+    100% {
+        background-color: #83d1e1;
+    }
 }
 
 /* Logo and header */
