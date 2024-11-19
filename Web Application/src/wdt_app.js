@@ -61,7 +61,7 @@ window.addEventListener('load', () => {
             `;
           staffTableBody.appendChild(newRow);
         }
-        rowSelection();
+        rowSelectionClick();
       })
       .catch((error) => console.log('Error: ', error));
   })();
@@ -72,35 +72,116 @@ function createUser(name, surname, picture, email, status, outTime, duration, ex
 /** Row selection
  * @description - This function applies a specific css styling class for mouse selected rows of staff table
  */
-function rowSelection() {
+function rowSelectionClick() {
   const rows = staffTableBody.getElementsByTagName('tr');
 
   for (let i = 0; i < rows.length; i++) {
-    rows[i].addEventListener('click', function () {
-      this.classList.toggle('rowSelection');
-    });
+    rows[i].addEventListener('click', rowSelectedBg);
+  }
+}
+
+function rowSelectedBg() {
+  this.classList.toggle('rowSelection');
+}
+
+/**
+ * @description - This functions checks wether the returned time variables have a zero next to it or not, if not add one.
+ *              - Valid output: 02 h : 50 mins
+ *              - Invalid output: 2 h: 5 mins
+ * @param {Number} i - We know by default that the Date object returns integers less than 10 without a Zero next to it
+ * @returns {Number} - If Date is less than 10, Returns the original number with a Zero concatenated to it
+ */
+function addZero(i) {
+  return i < 10 ? 0 + 1 : i;
+}
+
+//Format current time in hours and minutes as well as add leading zero
+const d = new Date();
+const hh = addZero(d.getHours());
+const mm = addZero(d.getMinutes());
+const currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
+
+/**
+ * @description - Higher order function which takes the current time in minutes, and the additional passed time in minutes.
+ *              - The inner function alculates these together to return the time in hour back, this is going to be the Expected Return Time.
+ * @param {Number} baseMinutes  - Takes the current base time in minutes
+ * @returns {Function} - Takes additional time in minutes, which then is calculated to a total time from minutes to hours
+ */
+function createReturnTimeCalculator(baseMinutes) {
+  return function (additionalMinutes) {
+    const totalMinutes = baseMinutes + additionalMinutes;
+    const hours = parseInt(totalMinutes / 60);
+    const minutes = Math.round((totalMinutes / 60 - hours) * 60);
+    return `${addZero(hours)}:${addZero(minutes)}`;
+  };
+}
+
+//Initialize the return time calculator with the current time
+const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes);
+
+/**
+ * @description - Validates the user input for duration.
+ *              - We are looking to validate empty input, non numeric values and negative numbers
+ * @param {String} input - The user input.
+ * @returns {Boolean} - This will be true if the input is invalid, false otherwise
+ */
+function isInvalidInput(input) {
+  return input.trim() === '' || isNaN(input) || input <= 0;
+}
+
+/**
+ * @description - Prompts the user for a duration, the prompt is only passed on valid input.
+ * @returns {number} - Valid duration in number, no negative numbers allowed.
+ */
+function getUserDuration() {
+  while (true) {
+    const userInput = prompt('How long are you going to be gone for?');
+    if (!isInvalidInput(userInput)) {
+      return parseInt(userInput);
+    } else {
+      alert('Invalid input, try again');
+    }
   }
 }
 
 /**
- * Date, time and button handlers
+ * @description - This function formats the time from user input into a string.
+ * @param {Number} totalMinutes - Takes a duration in minutes as a parameter.
+ * @returns {String} - Returns a formatted duration string.
  */
-function addZero(i) {
-  if (i < 10) {
-    i = 0 + i;
-  }
-  return i;
+function formatDuration(totalMinutes) {
+  const hours = parseInt(totalMinutes / 60);
+  const minutes = Math.round(totalMinutes - hours * 60);
+  return minutes === 0 ? `${hours} h` : `${hours} h: ${minutes} m`;
 }
-const d = new Date();
-let hh = addZero(d.getHours());
-let mm = addZero(d.getMinutes());
 
+/**
+ * @description - Updates the selected row with out time, duration and expected return time.
+ * @param {HTMLElement} row - The selected row to populate.
+ * @param {*} outTime - The formatted out time.
+ * @param {*} duration - The formated duration.
+ * @param {*} returnTime - The expected return time.
+ */
+function updateRowCells(row, outTime, duration, returnTime) {
+  //Convert to OOP
+  row.cells[4].innerHTML = 'Out';
+  row.cells[5].innerHTML = outTime;
+  row.cells[6].innerHTML = duration;
+  row.cells[7].innerHTML = returnTime;
+}
+
+/**
+ * Button handlers for populating the outTime, duration and expected return
+ */
 outButton.addEventListener('click', function () {
-  const status = document.getElementsByClassName('rowSelection');
-  if (status.length > 0) {
-    status[0].cells[4].innerHTML = 'Out';
-    let loggedOutTime = hh + ':' + mm;
-    status[0].cells[5].innerHTML = loggedOutTime;
+  const selectedRows = document.getElementsByClassName('rowSelection');
+  if (selectedRows.length > 0) {
+    const outTimeStamp = `${hh}:${mm}`;
+    const userDuration = getUserDuration();
+    const formattedDuration = formatDuration(userDuration);
+    const expectedReturnTime = calculateReturnTime(userDuration);
+
+    updateRowCells(selectedRows[0], outTimeStamp, formattedDuration, expectedReturnTime);
   }
 });
 
@@ -110,23 +191,3 @@ inButton.addEventListener('click', function () {
     status[0].cells[4].innerHTML = 'In';
   }
 });
-
-// let date = `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`
-
-// let ss = d.getSeconds();
-// console.log('ss:', ss)
-
-// let time = hh + ':' + mm + ':' + ss
-// console.log('time:', time)
-
-// function addTime(number) {
-//     let hour = 3600;
-//     let minutes = 60;
-//     let seconds = 60;
-
-//     if (number < 60) {
-//         ss = ss + number
-//     }
-// }
-
-// addTime(24)
