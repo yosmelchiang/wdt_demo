@@ -150,6 +150,12 @@ table buttons {
   padding: 20px;
 }
 
+/* Handles background and font style on selected rows */
+.content .rowSelection td{
+    background-color:#198754;
+    color: white;
+}
+
 /* Button styling */
 .table-buttons {
   padding: 5px;
@@ -157,13 +163,13 @@ table buttons {
   flex-direction: row-reverse;
   justify-content: space-between;
 }
-#btn-confirm {
+.btn-confirm {
   color: #fff;
   background-color: #198754;
   font-family: 'Consolas', monospace;
 }
 
-#btn-cancel {
+.btn-cancel {
   color: #fff;
   background-color: #dc3545;
   font-family: 'Consolas', monospace;
