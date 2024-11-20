@@ -222,10 +222,11 @@ function updateRowCells(row, outTime, duration, returnTime) {
  */
 outButton.addEventListener('click', function () {
   const selectedRows = document.getElementsByClassName('rowSelection');
-  const name = selectedRows[0].getElementsByTagName('td')[1].innerText;
-  const surname = selectedRows[0].getElementsByTagName('td')[2].innerText;
 
   if (selectedRows.length > 0) {
+    const name = selectedRows[0].getElementsByTagName('td')[1].innerText;
+    const surname = selectedRows[0].getElementsByTagName('td')[2].innerText;
+
     const hh = addZero(d.getHours());
     const mm = addZero(d.getMinutes());
     const outTimeStamp = `${hh}:${mm}`;
@@ -240,7 +241,7 @@ outButton.addEventListener('click', function () {
 
     const checkIfLate = setInterval(() => {
       if (expectedReturnTimeInMins < currentTimeInMinutes) {
-        console.log(`${name} is late`);
+        console.log(`${name} ${surname} is late`);
         clearInterval(checkIfLate);
       }
     }, 1000);
