@@ -33,7 +33,9 @@ class Staff extends Employee {
   }
 }
 
-const apiUrl = 'https://randomuser.me/api/?results=5&seed=noroffbed1';
+const userAmount = 5; // The amount of users we want to fetch from randomuser.me API
+const seed = 'wdt'; // A specific seed query parameter so we dont get random users on every fetch
+const apiUrl = `https://randomuser.me/api/?results=${userAmount}&seed=${seed}`;
 
 window.addEventListener('load', () => {
   // This function will use the randomuser.me api to fetch random users
@@ -50,15 +52,15 @@ window.addEventListener('load', () => {
           const staff = new Staff(userData[i]);
 
           newRow.innerHTML = `
-            <td><img src="${staff.picture}"></td> 
-            <td>${staff.name}</td>
-            <td>${staff.surname}</td>
-            <td>${staff.email}</td>
-            <td>${staff.status}</td>
-            <td>${staff.outTime}</td>
-            <td>${staff.duration}</td>
-            <td>${staff.expectedRTime}</td>
-            `;
+          <td><img src="${staff.picture}"></td> 
+          <td>${staff.name}</td>
+          <td>${staff.surname}</td>
+          <td>${staff.email}</td>
+          <td>${staff.status}</td>
+          <td>${staff.outTime}</td>
+          <td>${staff.duration}</td>
+          <td>${staff.expectedRTime}</td>
+          `;
           staffTableBody.appendChild(newRow);
         }
         rowSelectionClick();
@@ -95,8 +97,11 @@ function addZero(i) {
 
 // Date and time configuration
 
-//Initializing an empty variable where we will be storing and updating date object from within a function
+//Empty variable where we will be storing and updating date object from within a function
 let d;
+
+//Current time in minutes, for use in calculations for the staff table
+let currentTimeInMinutes;
 
 //IIFE that will keep calling itself with a 1 second delay
 (function updateDateAndTime() {
@@ -116,12 +121,13 @@ let d;
     'December'
   ];
   d = new Date();
+  currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
   const hh = addZero(d.getHours());
   const mm = addZero(d.getMinutes());
   const ss = addZero(d.getSeconds());
   const currentTime = `${hh}:${mm}:${ss}`;
 
-  const day = days[d.getDay()]
+  const day = days[d.getDay()];
   const monthName = months[d.getMonth()];
   const date = d.getDate();
   const year = d.getFullYear();
@@ -136,8 +142,7 @@ let d;
   }, 1000);
 })();
 
-//Current time in minutes, for use in calculations for the staff table
-const currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
+console.log('currentTimeInMinutes:', currentTimeInMinutes);
 
 /**
  * @description - Higher order function which takes the current time in minutes, and the additional passed time in minutes.
@@ -145,14 +150,17 @@ const currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
  * @param {Number} baseMinutes  - Takes the current base time in minutes
  * @returns {Function} - Takes additional time in minutes, which then is calculated to a total time from minutes to hours
  */
+
 function createReturnTimeCalculator(baseMinutes) {
   return function (additionalMinutes) {
     const totalMinutes = baseMinutes + additionalMinutes;
-    const hours = parseInt(totalMinutes / 60);
-    const minutes = Math.round((totalMinutes / 60 - hours) * 60);
-    console.log('minutes:', minutes);
-    return `${addZero(hours)}:${addZero(minutes)}`;
+    return totalMinutes;
   };
+}
+function returnTimeFormat(totalMinutes) {
+  const hours = parseInt(totalMinutes / 60);
+  const minutes = Math.round((totalMinutes / 60 - hours) * 60);
+  return `${addZero(hours)}:${addZero(minutes)}`;
 }
 
 //Initialize the return time calculator with the current time
@@ -214,16 +222,28 @@ function updateRowCells(row, outTime, duration, returnTime) {
  */
 outButton.addEventListener('click', function () {
   const selectedRows = document.getElementsByClassName('rowSelection');
+  const name = selectedRows[0].getElementsByTagName('td')[1].innerText;
+  const surname = selectedRows[0].getElementsByTagName('td')[2].innerText;
+
   if (selectedRows.length > 0) {
     const hh = addZero(d.getHours());
     const mm = addZero(d.getMinutes());
     const outTimeStamp = `${hh}:${mm}`;
     const userDuration = getUserDuration();
     const formattedDuration = formatDuration(userDuration);
-    const expectedReturnTime = calculateReturnTime(userDuration);
+    const expectedReturnTime = returnTimeFormat(calculateReturnTime(userDuration));
+    const expectedReturnTimeInMins = calculateReturnTime(userDuration);
     console.log('expectedReturnTime:', expectedReturnTime);
+    console.log('expectedReturnTimeInMins:', expectedReturnTimeInMins);
 
     updateRowCells(selectedRows[0], outTimeStamp, formattedDuration, expectedReturnTime);
+
+    const checkIfLate = setInterval(() => {
+      if (expectedReturnTimeInMins < currentTimeInMinutes) {
+        console.log(`${name} is late`);
+        clearInterval(checkIfLate);
+      }
+    }, 1000);
   }
 });
 
