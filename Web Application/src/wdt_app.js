@@ -67,8 +67,6 @@ window.addEventListener('load', () => {
   })();
 });
 
-function createUser(name, surname, picture, email, status, outTime, duration, expectedRTime) {}
-
 /** Row selection
  * @description - This function applies a specific css styling class for mouse selected rows of staff table
  */
@@ -95,10 +93,50 @@ function addZero(i) {
   return i < 10 ? `0${i}` : `${i}`;
 }
 
-//Format current time in hours and minutes as well as add leading zero
-const d = new Date();
-const hh = addZero(d.getHours());
-const mm = addZero(d.getMinutes());
+// Date and time configuration
+
+//Initializing an empty variable where we will be storing and updating date object from within a function
+let d;
+
+//IIFE that will keep calling itself with a 1 second delay
+(function updateDateAndTime() {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
+  d = new Date();
+  const hh = addZero(d.getHours());
+  const mm = addZero(d.getMinutes());
+  const ss = addZero(d.getSeconds());
+  const currentTime = `${hh}:${mm}:${ss}`;
+
+  const day = days[d.getDay()]
+  const monthName = months[d.getMonth()];
+  const date = d.getDate();
+  const year = d.getFullYear();
+  const currentDate = `${day}, ${monthName} ${date}, ${year} at`;
+
+  //Update the HTML element with the current date and time.
+  document.getElementById('dateAndTime').innerHTML = `${currentDate} ${currentTime}`;
+
+  //Schedule a new update with 1 second delay between each update
+  setTimeout(() => {
+    updateDateAndTime();
+  }, 1000);
+})();
+
+//Current time in minutes, for use in calculations for the staff table
 const currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
 
 /**
@@ -177,10 +215,13 @@ function updateRowCells(row, outTime, duration, returnTime) {
 outButton.addEventListener('click', function () {
   const selectedRows = document.getElementsByClassName('rowSelection');
   if (selectedRows.length > 0) {
+    const hh = addZero(d.getHours());
+    const mm = addZero(d.getMinutes());
     const outTimeStamp = `${hh}:${mm}`;
     const userDuration = getUserDuration();
     const formattedDuration = formatDuration(userDuration);
     const expectedReturnTime = calculateReturnTime(userDuration);
+    console.log('expectedReturnTime:', expectedReturnTime);
 
     updateRowCells(selectedRows[0], outTimeStamp, formattedDuration, expectedReturnTime);
   }
