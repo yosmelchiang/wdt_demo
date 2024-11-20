@@ -1,14 +1,32 @@
-/**
- * HTML Elements
- */
+//Constants
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+];
+
+// DOM Elements
 const staffTable = document.getElementById('staff'); //Main table of staff members
 const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff table body
 const inButton = document.getElementById('btn-in');
 const outButton = document.getElementById('btn-out');
+const toastWindow = document.getElementById('liveToast');
+const toastBody = toastWindow.getElementsByClassName('toast-body')[0];
+const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
 
-/**
- * Employee Classes
- */
+// Date variables
+let d; // Where we will be storing and updating date object
+let currentTimeInMinutes; //Current time in minutes, for use in calculations
 
 class Employee {
   constructor(user) {
@@ -28,31 +46,30 @@ class Staff extends Employee {
     this.expectedRTime = 0;
   }
 
-  staffMemberIsLate() {
-    console.log("You're late");
+  updateRow(row) {
+    row.cells[4].textContent = this.status;
+    row.cells[5].textContent = this.outTime;
+    row.cells[6].textContent = this.duration;
+    row.cells[7].textContent = this.expectedRTime;
   }
 }
-
-const userAmount = 5; // The amount of users we want to fetch from randomuser.me API
-const seed = 'wdt'; // A specific seed query parameter so we dont get random users on every fetch
-const apiUrl = `https://randomuser.me/api/?results=${userAmount}&seed=${seed}`;
 
 window.addEventListener('load', () => {
   // This function will use the randomuser.me api to fetch random users
   // Here we have provided a seed to always fetch the same users and also specified a paremeter of 5 user results
   // IIFE - Immediately invoked Function Expression - Will run immediately once the page has fully loaded
   (function fetchUsers() {
-    fetch(apiUrl)
+    fetch('https://randomuser.me/api/?results=5&seed=wdt')
       .then((response) => response.json())
       .then((data) => {
         const userData = data.results;
 
         for (let i = 0; i < userData.length; i++) {
-          const newRow = document.createElement('tr');
           const staff = new Staff(userData[i]);
+          const newRow = document.createElement('tr');
 
           newRow.innerHTML = `
-          <td><img src="${staff.picture}"></td> 
+          <td><img src="${staff.picture}" alt="Profile Picture"></td> 
           <td>${staff.name}</td>
           <td>${staff.surname}</td>
           <td>${staff.email}</td>
@@ -65,11 +82,11 @@ window.addEventListener('load', () => {
         }
         rowSelectionClick();
       })
-      .catch((error) => console.log('Error: ', error));
+      .catch((error) => console.log('Error fetching users: ', error));
   })();
 });
 
-/** Row selection
+/** ROW SELECTION
  * @description - This function applies a specific css styling class for mouse selected rows of staff table
  */
 function rowSelectionClick() {
@@ -84,7 +101,7 @@ function rowSelectedBg() {
   this.classList.toggle('rowSelection');
 }
 
-/**
+/** DATE AND TIME FUNCTIONS
  * @description - This functions checks wether the returned time variables have a zero next to it or not, if not add one.
  *              - Valid output: 02 h : 50 mins
  *              - Invalid output: 2 h: 5 mins
@@ -95,78 +112,52 @@ function addZero(i) {
   return i < 10 ? `0${i}` : `${i}`;
 }
 
-// Date and time configuration
-
-//Empty variable where we will be storing and updating date object from within a function
-let d;
-
-//Current time in minutes, for use in calculations for the staff table
-let currentTimeInMinutes;
-
 //IIFE that will keep calling itself with a 1 second delay
 (function updateDateAndTime() {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ];
   d = new Date();
   currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
   const hh = addZero(d.getHours());
   const mm = addZero(d.getMinutes());
   const ss = addZero(d.getSeconds());
-  const currentTime = `${hh}:${mm}:${ss}`;
 
-  const day = days[d.getDay()];
-  const monthName = months[d.getMonth()];
+  const currentTime = `${hh}:${mm}:${ss}`;
+  const day = DAYS[d.getDay()];
+  const monthName = MONTHS[d.getMonth()];
   const date = d.getDate();
   const year = d.getFullYear();
   const currentDate = `${day}, ${monthName} ${date}, ${year} at`;
 
-  //Update the HTML element with the current date and time.
-  document.getElementById('dateAndTime').innerHTML = `${currentDate} ${currentTime}`;
+  //Update the DOM with the current date and time.
+  document.getElementById('dateAndTime').textContent = `${currentDate} ${currentTime}`;
 
   //Schedule a new update with 1 second delay between each update
-  setTimeout(() => {
-    updateDateAndTime();
-  }, 1000);
+  setTimeout(updateDateAndTime, 1000);
 })();
 
-console.log('currentTimeInMinutes:', currentTimeInMinutes);
-
-/**
+/** RETURN TIME CALCULATOR MINUTES
  * @description - Higher order function which takes the current time in minutes, and the additional passed time in minutes.
  *              - The inner function alculates these together to return the time in hour back, this is going to be the Expected Return Time.
  * @param {Number} baseMinutes  - Takes the current base time in minutes
  * @returns {Function} - Takes additional time in minutes, which then is calculated to a total time from minutes to hours
  */
-
 function createReturnTimeCalculator(baseMinutes) {
   return function (additionalMinutes) {
     const totalMinutes = baseMinutes + additionalMinutes;
     return totalMinutes;
   };
 }
+
+/** RETURN TIME HH:MM FORMAT
+ * @param {Number} totalMinutes - Takes in minuts and turns them to hh:mm
+ * @returns {String} - String of hours and minutes
+ */
 function returnTimeFormat(totalMinutes) {
   const hours = parseInt(totalMinutes / 60);
   const minutes = Math.round((totalMinutes / 60 - hours) * 60);
   return `${addZero(hours)}:${addZero(minutes)}`;
 }
 
-//Initialize the return time calculator with the current time
-const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes);
-
-/**
+/** INPUT VALIDATOR
  * @description - Validates the user input for duration.
  *              - We are looking to validate empty input, non numeric values and negative numbers
  * @param {String} input - The user input.
@@ -176,7 +167,7 @@ function isInvalidInput(input) {
   return input.trim() === '' || isNaN(input) || input <= 0;
 }
 
-/**
+/** PROMPT AND CHECKS FOR VALID OUT LENGTH
  * @description - Prompts the user for a duration, the prompt is only passed on valid input.
  * @returns {number} - Valid duration in number, no negative numbers allowed.
  */
@@ -191,7 +182,7 @@ function getUserDuration() {
   }
 }
 
-/**
+/** FORMATS OUT DURATION TO HOURS AND MINUTES
  * @description - This function formats the time from user input into a string.
  * @param {Number} totalMinutes - Takes a duration in minutes as a parameter.
  * @returns {String} - Returns a formatted duration string.
@@ -202,12 +193,15 @@ function formatDuration(totalMinutes) {
   return minutes === 0 ? `${hours} h` : `${hours} h: ${minutes} m`;
 }
 
-/**
+//Initialize the return time calculator with the current time
+const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes);
+
+/** UPDATE HTML DOM CELL ELEMENTS
  * @description - Updates the selected row with out time, duration and expected return time.
  * @param {HTMLElement} row - The selected row to populate.
- * @param {*} outTime - The formatted out time.
- * @param {*} duration - The formated duration.
- * @param {*} returnTime - The expected return time.
+ * @param {String} outTime - The formatted out time in string
+ * @param {String} duration - The formated duration in string.
+ * @param {String} returnTime - The expected return time in string.
  */
 function updateRowCells(row, outTime, duration, returnTime) {
   //Convert to OOP
@@ -217,34 +211,45 @@ function updateRowCells(row, outTime, duration, returnTime) {
   row.cells[7].innerHTML = returnTime;
 }
 
-/**
- * Button handlers for populating the outTime, duration and expected return
+/** BUTTON handlers for populating the outTime, duration and expected return
  */
 outButton.addEventListener('click', function () {
   const selectedRows = document.getElementsByClassName('rowSelection');
 
   if (selectedRows.length > 0) {
+    const profilePicture = selectedRows[0].getElementsByTagName('td')[0].innerHTML;
     const name = selectedRows[0].getElementsByTagName('td')[1].innerText;
     const surname = selectedRows[0].getElementsByTagName('td')[2].innerText;
 
+    const toastContent = document.createElement('div');
+
     const hh = addZero(d.getHours());
     const mm = addZero(d.getMinutes());
+
     const outTimeStamp = `${hh}:${mm}`;
     const userDuration = getUserDuration();
     const formattedDuration = formatDuration(userDuration);
     const expectedReturnTime = returnTimeFormat(calculateReturnTime(userDuration));
     const expectedReturnTimeInMins = calculateReturnTime(userDuration);
-    console.log('expectedReturnTime:', expectedReturnTime);
-    console.log('expectedReturnTimeInMins:', expectedReturnTimeInMins);
 
     updateRowCells(selectedRows[0], outTimeStamp, formattedDuration, expectedReturnTime);
 
     const checkIfLate = setInterval(() => {
-      if (expectedReturnTimeInMins < currentTimeInMinutes) {
-        console.log(`${name} ${surname} is late`);
+      if (expectedReturnTimeInMins <= currentTimeInMinutes) {
+        //Less or Equals to, so we dont have to wait another minute while testing :/
+
+        toastContent.innerHTML = `
+        ${profilePicture}
+        <p>${name} ${surname} is late!</p>
+        <p>Late by: ${currentTimeInMinutes - expectedReturnTimeInMins} mins</p>
+        `;
+        toastBody.appendChild(toastContent);
+
+        toastBootstrap.show();
         clearInterval(checkIfLate);
       }
     }, 1000);
+    // toastContent.remove(); //Might want to clear up the div so it can be reused
   }
 });
 
