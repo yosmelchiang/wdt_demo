@@ -42,16 +42,16 @@ let d; // Where we will be storing and updating date object
 let currentTimeInMinutes; //Current time in minutes, for use in calculations
 
 class Employee {
-  constructor(user) {
-    this.name = user.name.first;
-    this.surname = user.name.last;
+  constructor(name, surname) {
+    this.name = name;
+    this.surname = surname;
   }
 }
 
 class Staff extends Employee {
   constructor(user) {
-    super(user);
-    this.picture = user.picture.large;
+    super(user.name.first, user.name.last); //Inherits name and surname from Employee
+    this.picture = user.picture.large; //Staff-specific properties
     this.email = user.email;
     this.status = 'In';
     this.outTime = 0;
@@ -64,20 +64,43 @@ class Staff extends Employee {
     row.cells[6].textContent = this.duration;
     row.cells[7].textContent = this.expectedRTime;
   }
+
+  // checkLateness() {
+  //   const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
+  //   const checkIfLate = setInterval(() => {
+  //     const toastContent = document.createElement('div');
+
+  //     if (expectedReturnTimeInMins <= currentTimeInMinutes) {
+  //       toastContent.innerHTML = `
+  //       ${profilePicture}
+  //       <p>${this.name} ${surname} is late!</p>
+  //       <p>Late by: ${currentTimeInMinutes - expectedReturnTimeInMins} mins</p>
+  //       `;
+  //       toastBody.appendChild(toastContent);
+
+  //       toastBootstrap.show();
+  //       clearInterval(checkIfLate);
+
+  //       toastWindow.addEventListener('hidden.bs.toast', () => {
+  //         toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+  //       });
+  //     }
+  //   }, 1000);
+  //   return checkIfLate;
+  // }
 }
 
-class Delivery {
+class Delivery extends Employee {
   constructor(vehicle, name, surname, phone, adress, expectedRTime) {
+    super(name, surname); //Inherit name and surname from Employee
     this.vehicle = vehicle;
-    this.name = name;
-    this.surname = surname;
     this.phone = phone;
     this.adress = adress;
     this.expectedRTime = expectedRTime;
   }
 
-  checkLateness(returnTimeInMins) {
-    const expectedReturnTimeInMins = convertHoursToMinutes(returnTimeInMins);
+  checkLateness() {
+    const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
     const checkIfLate = setInterval(() => {
       const toastContent = document.createElement('div');
 
@@ -108,21 +131,23 @@ window.addEventListener('load', () => {
     fetch('https://randomuser.me/api/?results=5&seed=wdt')
       .then((response) => response.json())
       .then((data) => {
-        const userData = data.results;
+        const userData = data.results; // Represents the entire array of user data fetched from the API.
+        console.log('userData:', userData);
 
         for (let i = 0; i < userData.length; i++) {
-          const staff = new Staff(userData[i]);
+          const staffMember = new Staff(userData[i]); //Represents a single instance of the Staff class created from individual user's data.
           const newRow = document.createElement('tr');
 
+          //Populate the staff table with user data from our Staff instance.
           newRow.innerHTML = `
-          <td><img src="${staff.picture}" alt="Profile Picture"></td> 
-          <td>${staff.name}</td>
-          <td>${staff.surname}</td>
-          <td>${staff.email}</td>
-          <td>${staff.status}</td>
-          <td>${staff.outTime}</td>
-          <td>${staff.duration}</td>
-          <td>${staff.expectedRTime}</td>
+          <td><img src="${staffMember.picture}" alt="Profile Picture"></td> 
+          <td>${staffMember.name}</td>
+          <td>${staffMember.surname}</td>
+          <td>${staffMember.email}</td>
+          <td>${staffMember.status}</td>
+          <td>${staffMember.outTime}</td>
+          <td>${staffMember.duration}</td>
+          <td>${staffMember.expectedRTime}</td>
           `;
           staffTableBody.appendChild(newRow);
         }
@@ -304,6 +329,7 @@ outButton.addEventListener('click', function () {
     const userDuration = getUserDuration(); //Asks the user for duration and validates, returns time in minutes format
     const formattedDuration = convertMinutesToHours(userDuration); //Formats from minutes to HH:MM
     const expectedReturnTime = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time and return sin HH:MM format
+    console.log('expectedReturnTime:', expectedReturnTime);
     const expectedReturnTimeInMins = calculateReturnTime(userDuration);
 
     updateRowCells(selectedRows[0], outTimeStamp, formattedDuration, expectedReturnTime);
@@ -322,6 +348,10 @@ outButton.addEventListener('click', function () {
 
         toastBootstrap.show();
         clearInterval(checkIfLate);
+
+        toastWindow.addEventListener('hidden.bs.toast', () => {
+          toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+        });
       }
     }, 1000);
     // toastContent.remove(); //Might want to clear up the div so it can be reused
@@ -359,24 +389,25 @@ function validateInputs() {
 }
 addBtn.addEventListener('click', () => {
   const errorMessage = validateInputs();
-  console.log('errorMessage:', errorMessage);
 
   if (errorMessage) {
     alert(errorMessage);
-  } else {
-    const delivery = new Delivery(
-      schVehicle.value,
-      schName.value,
-      schSurname.value,
-      schPhone.value,
-      schAdress.value,
-      schReturnTime.value
-    );
+    return;
+  }
 
-    //Populate delivery board table
-    const newRow = document.createElement('tr');
+  const delivery = new Delivery(
+    schVehicle.value,
+    schName.value,
+    schSurname.value,
+    schPhone.value,
+    schAdress.value,
+    schReturnTime.value
+  );
 
-    newRow.innerHTML = `
+  //Populate delivery board table
+  const newRow = document.createElement('tr');
+
+  newRow.innerHTML = `
     <td>${delivery.vehicle}</td>
     <td>${delivery.name}</td>
     <td>${delivery.surname}</td>
@@ -385,12 +416,11 @@ addBtn.addEventListener('click', () => {
     <td>${delivery.expectedRTime}</td>
     `;
 
-    deliveryBody.appendChild(newRow);
+  deliveryBody.appendChild(newRow);
 
-    delivery.checkLateness(schReturnTime.value);
+  delivery.checkLateness();
 
-    deliveryRowSelection(); //Enables the selection of rows in delivery board
-  }
+  deliveryRowSelection(); //Enables the selection of rows in delivery board
 });
 
 clearBtn.addEventListener('click', () => {
