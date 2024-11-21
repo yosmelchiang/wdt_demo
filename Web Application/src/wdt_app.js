@@ -20,6 +20,10 @@ const staffTable = document.getElementById('staff'); //Main table of staff membe
 const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff table body
 const inButton = document.getElementById('btn-in');
 const outButton = document.getElementById('btn-out');
+
+const deliveryTable = document.getElementById('delivery'); //Main delivery board table
+const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
+
 const toastWindow = document.getElementById('liveToast');
 const toastBody = toastWindow.getElementsByClassName('toast-body')[0];
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
@@ -45,12 +49,40 @@ class Staff extends Employee {
     this.duration = 0;
     this.expectedRTime = 0;
   }
-
   updateRow(row) {
     row.cells[4].textContent = this.status;
     row.cells[5].textContent = this.outTime;
     row.cells[6].textContent = this.duration;
     row.cells[7].textContent = this.expectedRTime;
+  }
+}
+
+class Delivery {
+  constructor(vehicle, name, surname, phone, adress, expectedRTime) {
+    this.vehicle = vehicle;
+    this.name = name;
+    this.surname = surname;
+    this.phone = phone;
+    this.adress = adress;
+    this.expectedRTime = expectedRTime;
+  }
+
+  checkLateness(returnTimeInMins) {
+    const expectedReturnTimeInMins = convertHoursToMinutes(returnTimeInMins)
+    const checkIfLate = setInterval(() => {
+      const toastContent = document.createElement('div');
+      if(expectedReturnTimeInMins <= currentTimeInMinutes){
+        toastContent.innerHTML = `
+        <p>${this.name} ${this.surname} is late!</p>
+        <p>Late by: ${currentTimeInMinutes - expectedReturnTimeInMins} mins</p>
+        `;
+        toastBody.appendChild(toastContent);
+
+        toastBootstrap.show();
+        clearInterval(checkIfLate);        
+      }
+    }, 1000)
+    return checkIfLate
   }
 }
 
@@ -141,8 +173,10 @@ function addZero(i) {
  * @returns {Function} - Takes additional time in minutes, which then is calculated to a total time from minutes to hours
  */
 function createReturnTimeCalculator(baseMinutes) {
+  //Outfunc receives the global time in minutes
   return function (additionalMinutes) {
-    const totalMinutes = baseMinutes + additionalMinutes;
+    //Inner function receives a specific time in minutes
+    const totalMinutes = baseMinutes + additionalMinutes; //Calculates total minutes for later reference
     return totalMinutes;
   };
 }
@@ -167,7 +201,7 @@ function isInvalidInput(input) {
   return input.trim() === '' || isNaN(input) || input <= 0;
 }
 
-/** PROMPT AND CHECKS FOR VALID OUT LENGTH
+/** PROMPT AND CHECKS FOR VALID OUT DURATION
  * @description - Prompts the user for a duration, the prompt is only passed on valid input.
  * @returns {number} - Valid duration in number, no negative numbers allowed.
  */
@@ -182,15 +216,22 @@ function getUserDuration() {
   }
 }
 
-/** FORMATS OUT DURATION TO HOURS AND MINUTES
+/** FORMATS OUT DURATION (mins) TO HOURS AND MINUTES ( HH: MM )
  * @description - This function formats the time from user input into a string.
  * @param {Number} totalMinutes - Takes a duration in minutes as a parameter.
  * @returns {String} - Returns a formatted duration string.
  */
-function formatDuration(totalMinutes) {
+function convertMinutesToHours(totalMinutes) {
   const hours = parseInt(totalMinutes / 60);
   const minutes = Math.round(totalMinutes - hours * 60);
   return minutes === 0 ? `${hours} h` : `${hours} h: ${minutes} m`;
+}
+
+function convertHoursToMinutes(time){
+  const timeParts = time.split(':');
+  const hours = parseInt(timeParts[0])
+  const minutes = parseInt(timeParts[1])
+  return hours * 60 + minutes
 }
 
 //Initialize the return time calculator with the current time
@@ -215,26 +256,26 @@ function updateRowCells(row, outTime, duration, returnTime) {
  */
 outButton.addEventListener('click', function () {
   const selectedRows = document.getElementsByClassName('rowSelection');
+  console.log('selectedRows:', selectedRows);
 
   if (selectedRows.length > 0) {
     const profilePicture = selectedRows[0].getElementsByTagName('td')[0].innerHTML;
     const name = selectedRows[0].getElementsByTagName('td')[1].innerText;
     const surname = selectedRows[0].getElementsByTagName('td')[2].innerText;
 
-    const toastContent = document.createElement('div');
-
     const hh = addZero(d.getHours());
     const mm = addZero(d.getMinutes());
 
     const outTimeStamp = `${hh}:${mm}`;
-    const userDuration = getUserDuration();
-    const formattedDuration = formatDuration(userDuration);
-    const expectedReturnTime = returnTimeFormat(calculateReturnTime(userDuration));
+    const userDuration = getUserDuration(); //Asks the user for duration and validates, returns time in minutes format
+    const formattedDuration = convertMinutesToHours(userDuration); //Formats from minutes to HH:MM
+    const expectedReturnTime = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time and return sin HH:MM format
     const expectedReturnTimeInMins = calculateReturnTime(userDuration);
 
     updateRowCells(selectedRows[0], outTimeStamp, formattedDuration, expectedReturnTime);
 
     const checkIfLate = setInterval(() => {
+      const toastContent = document.createElement('div');
       if (expectedReturnTimeInMins <= currentTimeInMinutes) {
         //Less or Equals to, so we dont have to wait another minute while testing :/
 
@@ -259,3 +300,69 @@ inButton.addEventListener('click', function () {
     status[0].cells[4].innerHTML = 'In';
   }
 });
+
+// Schedule delivery DOM elements
+const schVehicle = document.getElementById('sch-vehicle');
+const schName = document.getElementById('sch-fname');
+const schSurname = document.getElementById('sch-lname');
+const schPhone = document.getElementById('sch-phone');
+const schAdress = document.getElementById('sch-adress');
+const schReturnTime = document.getElementById('sch-rtime');
+const addBtn = document.getElementById('btn-add');
+
+function validateInputs() {
+  let errorMessage = '';
+
+  if (schName.value.trim() === '') {
+    errorMessage = 'Name cannot be empty.';
+  } else if (schSurname.value.trim() === '') {
+    errorMessage = 'Surname cannot be empty.';
+  } else if (schPhone.value.trim() === '') {
+    errorMessage = 'Phone cannot be empty.';
+  } else if (isNaN(schPhone.value)) {
+    errorMessage = 'Phone must be a valid number.'; //Should we use this validation at all?
+    // HTML input type is number so that is already sorted out, but what about length? Video shows 7 digits phone validation
+  } else if (schAdress.value.trim() === '') {
+    errorMessage = 'Adress cannot be empty.';
+  } else if (schReturnTime.value.trim() === '') {
+    errorMessage = 'Return time cannot be empty.';
+  }
+
+  return errorMessage;
+}
+addBtn.addEventListener('click', () => {
+  const errorMessage = validateInputs();
+  console.log('errorMessage:', errorMessage);
+
+  if (errorMessage) {
+    alert(errorMessage);
+  } else {
+    const delivery = new Delivery(
+      schVehicle.value,
+      schName.value,
+      schSurname.value,
+      schPhone.value,
+      schAdress.value,
+      schReturnTime.value
+    );
+
+    console.log('delivery:', delivery);
+
+    //Populate delivery board table
+    const newRow = document.createElement('tr');
+
+    newRow.innerHTML = `
+    <td>${delivery.vehicle}</td>
+    <td>${delivery.name}</td>
+    <td>${delivery.surname}</td>
+    <td>${delivery.phone}</td>
+    <td>${delivery.adress}</td>
+    <td>${delivery.expectedRTime}</td>
+    `;
+
+    deliveryBody.appendChild(newRow);
+
+    delivery.checkLateness(schReturnTime.value)
+  }
+});
+
