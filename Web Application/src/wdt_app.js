@@ -21,8 +21,17 @@ const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff tabl
 const inButton = document.getElementById('btn-in');
 const outButton = document.getElementById('btn-out');
 
+const schVehicle = document.getElementById('sch-vehicle');
+const schName = document.getElementById('sch-fname');
+const schSurname = document.getElementById('sch-lname');
+const schPhone = document.getElementById('sch-phone');
+const schAdress = document.getElementById('sch-adress');
+const schReturnTime = document.getElementById('sch-rtime');
+const addBtn = document.getElementById('btn-add');
+
 const deliveryTable = document.getElementById('delivery'); //Main delivery board table
 const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
+const clearBtn = document.getElementById('btn-clear');
 
 const toastWindow = document.getElementById('liveToast');
 const toastBody = toastWindow.getElementsByClassName('toast-body')[0];
@@ -68,10 +77,11 @@ class Delivery {
   }
 
   checkLateness(returnTimeInMins) {
-    const expectedReturnTimeInMins = convertHoursToMinutes(returnTimeInMins)
+    const expectedReturnTimeInMins = convertHoursToMinutes(returnTimeInMins);
     const checkIfLate = setInterval(() => {
       const toastContent = document.createElement('div');
-      if(expectedReturnTimeInMins <= currentTimeInMinutes){
+
+      if (expectedReturnTimeInMins <= currentTimeInMinutes) {
         toastContent.innerHTML = `
         <p>${this.name} ${this.surname} is late!</p>
         <p>Late by: ${currentTimeInMinutes - expectedReturnTimeInMins} mins</p>
@@ -79,10 +89,14 @@ class Delivery {
         toastBody.appendChild(toastContent);
 
         toastBootstrap.show();
-        clearInterval(checkIfLate);        
+        clearInterval(checkIfLate);
+
+        toastWindow.addEventListener('hidden.bs.toast', () => {
+          toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+        });
       }
-    }, 1000)
-    return checkIfLate
+    }, 1000);
+    return checkIfLate;
   }
 }
 
@@ -112,25 +126,46 @@ window.addEventListener('load', () => {
           `;
           staffTableBody.appendChild(newRow);
         }
-        rowSelectionClick();
+        staffRowSelection(); //Enables the selection of rows in staff table
       })
       .catch((error) => console.log('Error fetching users: ', error));
   })();
 });
 
-/** ROW SELECTION
- * @description - This function applies a specific css styling class for mouse selected rows of staff table
+/** STAFF ROW SELECTION
+ * @description - This function applies a specific css styling class for mouse selected rows of staff table.
+ * @function staffRowSelection - Uses a simple for loop to iterate all the rows and add a class to it that
+ * we can use for styling as well as DOM manipulation when interacting with the table.
  */
-function rowSelectionClick() {
-  const rows = staffTableBody.getElementsByTagName('tr');
+function staffRowSelection() {
+  const sRows = staffTableBody.getElementsByTagName('tr');
 
-  for (let i = 0; i < rows.length; i++) {
-    rows[i].addEventListener('click', rowSelectedBg);
+  for (let i = 0; i < sRows.length; i++) {
+    sRows[i].addEventListener('click', function () {
+      this.classList.toggle('selectedRow');
+    });
   }
 }
 
-function rowSelectedBg() {
-  this.classList.toggle('rowSelection');
+/** DELIVERY BOARD ROW SELECTION
+ * @description - This function applies a specific css styling class for mouse selected rows of delivery board table.
+ * @function deliveryRowSelection - Compared to the staffRowSelection function, this table is dynamically populated,
+ * which means we need to be able to allow each old and new row to be interacted with after creation. This demands the need to apply event listeners to each one.
+ * We have achieved this by checking if rows have a certain attribute (delivery in this case) if not, add the attribute and also add the eventListener so we can interact with it.
+ */
+function deliveryRowSelection() {
+  const dRows = deliveryBody.getElementsByTagName('tr');
+
+  for (let i = 0; i < dRows.length; i++) {
+    const delivery = dRows[i].hasAttribute('delivery');
+
+    if (!delivery) {
+      dRows[i].addEventListener('click', function () {
+        this.classList.toggle('selectedRow');
+      });
+      dRows[i].setAttribute('delivery', 'true');
+    }
+  }
 }
 
 /** DATE AND TIME FUNCTIONS
@@ -227,11 +262,11 @@ function convertMinutesToHours(totalMinutes) {
   return minutes === 0 ? `${hours} h` : `${hours} h: ${minutes} m`;
 }
 
-function convertHoursToMinutes(time){
+function convertHoursToMinutes(time) {
   const timeParts = time.split(':');
-  const hours = parseInt(timeParts[0])
-  const minutes = parseInt(timeParts[1])
-  return hours * 60 + minutes
+  const hours = parseInt(timeParts[0]);
+  const minutes = parseInt(timeParts[1]);
+  return hours * 60 + minutes;
 }
 
 //Initialize the return time calculator with the current time
@@ -255,8 +290,7 @@ function updateRowCells(row, outTime, duration, returnTime) {
 /** BUTTON handlers for populating the outTime, duration and expected return
  */
 outButton.addEventListener('click', function () {
-  const selectedRows = document.getElementsByClassName('rowSelection');
-  console.log('selectedRows:', selectedRows);
+  const selectedRows = document.getElementsByClassName('selectedRow');
 
   if (selectedRows.length > 0) {
     const profilePicture = selectedRows[0].getElementsByTagName('td')[0].innerHTML;
@@ -295,30 +329,23 @@ outButton.addEventListener('click', function () {
 });
 
 inButton.addEventListener('click', function () {
-  const status = document.getElementsByClassName('rowSelection');
+  const status = document.getElementsByClassName('selectedRow');
   if (status.length > 0) {
     status[0].cells[4].innerHTML = 'In';
   }
 });
 
-// Schedule delivery DOM elements
-const schVehicle = document.getElementById('sch-vehicle');
-const schName = document.getElementById('sch-fname');
-const schSurname = document.getElementById('sch-lname');
-const schPhone = document.getElementById('sch-phone');
-const schAdress = document.getElementById('sch-adress');
-const schReturnTime = document.getElementById('sch-rtime');
-const addBtn = document.getElementById('btn-add');
+// Schedule delivery stuff
 
 function validateInputs() {
   let errorMessage = '';
 
-  if (schName.value.trim() === '') {
-    errorMessage = 'Name cannot be empty.';
-  } else if (schSurname.value.trim() === '') {
-    errorMessage = 'Surname cannot be empty.';
+  if (schName.value.trim() === '' || !isNaN(schName.value)) {
+    errorMessage = 'Name cannot be empty or a number.';
+  } else if (schSurname.value.trim() === '' || !isNaN(schSurname.value)) {
+    errorMessage = 'Surname cannot be empty or a number.';
   } else if (schPhone.value.trim() === '') {
-    errorMessage = 'Phone cannot be empty.';
+    errorMessage = 'Phone cannot be empty or a number.';
   } else if (isNaN(schPhone.value)) {
     errorMessage = 'Phone must be a valid number.'; //Should we use this validation at all?
     // HTML input type is number so that is already sorted out, but what about length? Video shows 7 digits phone validation
@@ -346,8 +373,6 @@ addBtn.addEventListener('click', () => {
       schReturnTime.value
     );
 
-    console.log('delivery:', delivery);
-
     //Populate delivery board table
     const newRow = document.createElement('tr');
 
@@ -362,7 +387,16 @@ addBtn.addEventListener('click', () => {
 
     deliveryBody.appendChild(newRow);
 
-    delivery.checkLateness(schReturnTime.value)
+    delivery.checkLateness(schReturnTime.value);
+
+    deliveryRowSelection(); //Enables the selection of rows in delivery board
   }
 });
 
+clearBtn.addEventListener('click', () => {
+  const selectedRows = deliveryBody.getElementsByClassName('selectedRow');
+
+  for (let i = 0; i < selectedRows.length; i++) {
+    selectedRows[i].remove();
+  }
+});

@@ -151,7 +151,7 @@ table buttons {
 }
 
 /* Handles background and font style on selected rows */
-.content .rowSelection td{
+.content .selectedRow td{
     background-color:#198754;
     color: white;
 }
