@@ -15,6 +15,9 @@ const MONTHS = [
   'December'
 ];
 
+//We are going to use this map to store Staff instances created by the outButton
+const staffMap = new Map();
+
 // DOM Elements
 const tableRow = document.getElementsByClassName('selectedRow');
 
@@ -36,8 +39,10 @@ const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery 
 const clearBtn = document.getElementById('btn-clear');
 
 const toastWindow = document.getElementById('liveToast');
-const toastBody = toastWindow.getElementsByClassName('toast-body')[0];
+// const toastBody = toastWindow.getElementsByClassName('toast-body')[0];
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
+
+// createToast('Julio');
 
 // Date variables
 let d; // Where we will be storing and updating date object
@@ -61,7 +66,9 @@ class Staff extends Employee {
     this.expectedRTime = '';
   }
 
-  staffOut() {
+  staffOut(outTime, expectedRTime) {
+    this.outTime = outTime;
+    this.expectedRTime = expectedRTime;
     this.status = 'Out';
     tableRow[0].cells[4].innerHTML = this.status; //Changes the HTML element status
   }
@@ -77,26 +84,45 @@ class Staff extends Employee {
         const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
 
         if (expectedReturnTimeInMins <= currentTimeInMinutes()) {
-          const toastContent = document.createElement('div');
-          toastContent.innerHTML = `
-          ${this.picture}
-          <p>${this.name} ${this.surname} is late!</p>
-          <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
-          `;
-          toastBody.appendChild(toastContent);
+          const toastContainer = document.getElementsByClassName('toast-container')[0];
+          const id = `${this.name}.${this.surname}`;
 
+          //Create the outer div
+          const toast = document.createElement('div');
+
+          //The reason for why we are creating a whole toast section in here instead of html and accessing it is because if
+          //We generate toast elements within a toast container, they will stack, according to bootstrap documentation :)
+          //We also want to get rid of each toast once they are timed out, or closed
+          toast.innerHTML = `
+          <div id="${id}" class="toast text-bg-danger border-0 p-3 mb-3" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header text-bg-danger border-0">
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+              <img src="${this.picture}" alt="Staff Picture">
+              <p>${this.name} ${this.surname} is late!</p>
+              <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
+            </div>
+          </div>
+        `;
+
+          toastContainer.appendChild(toast);
+
+          //Activate bootstrap
+          const toastWindow = document.getElementById(`${id}`);
+          const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
           toastBootstrap.show();
-          clearInterval(checkIfLate);
 
           toastWindow.addEventListener('hidden.bs.toast', () => {
-            toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+            toast.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
           });
+
+          clearInterval(checkIfLate);
         }
       } else {
-        console.log('Client is back');
         clearInterval(checkIfLate);
       }
-    }, 60000); //Checks for lateness with 1 minute interval instead of 1 second to prevent performance issues
+    }, 1000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
@@ -111,25 +137,44 @@ class Delivery extends Employee {
   }
 
   checkLateness() {
-    const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
     const checkIfLate = setInterval(() => {
-      const toastContent = document.createElement('div');
+      const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
 
       if (expectedReturnTimeInMins <= currentTimeInMinutes()) {
-        toastContent.innerHTML = `
-        <p>${this.name} ${this.surname} is late!</p>
-        <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
-        `;
-        toastBody.appendChild(toastContent);
+        const toastContainer = document.getElementsByClassName('toast-container')[0];
+        const id = `${this.name}.${this.surname}`;
 
+        //Create the outer div
+        const toast = document.createElement('div');
+
+        //The reason for why we are creating a whole toast section in here instead of html and accessing it is because if
+        //We generate toast elements within a toast container, they will stack, according to bootstrap documentation :)
+        //We also want to get rid of each toast once they are timed out, or closed
+        toast.innerHTML = `
+        <div id="${id}" class="toast text-bg-danger border-0 p-3 mb-3" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header text-bg-danger border-0">
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            <p>${this.name} ${this.surname} is late!</p>
+            <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
+          </div>
+      </div>
+      `;
+
+        toastContainer.appendChild(toast);
+
+        //Activate bootstrap
+        const toastWindow = document.getElementById(`${id}`);
+        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
         toastBootstrap.show();
-        clearInterval(checkIfLate);
 
         toastWindow.addEventListener('hidden.bs.toast', () => {
-          toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+          toast.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
         });
+        clearInterval(checkIfLate);
       }
-    }, 60000); //Checks for lateness with 1 minute interval instead of 1 second to prevent performance issues
+    }, 1000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
@@ -142,9 +187,12 @@ window.addEventListener('load', () => {
     fetch('https://randomuser.me/api/?results=5&seed=wdt')
       .then((response) => response.json())
       .then((data) => {
-        const userData = data.results; // Represents the entire array of user data fetched from the API.
+        //Our JSON data returns info (object) and results (array) (5)
+        const userData = data.results; // We using only the results array (5) of user data fetched from the API.
 
+        //We are going to iterate through each array and create an object (jsUser) with specific properties for each.
         for (let i = 0; i < userData.length; i++) {
+          //We are parsing the JSON data into an object, where we only want picture, name, surname and email.
           const jsUser = {
             picture: userData[i].picture.large,
             name: userData[i].name.first,
@@ -152,12 +200,13 @@ window.addEventListener('load', () => {
             email: userData[i].email
           };
 
-          const staffMember = new Staff(jsUser); //Represents a single instance of the Staff class created from individual user's data.
+          const staffID = jsUser.name + '.' + jsUser.surname; //We are creating an ID based on the user's first name and surname for our map
+          const staffMember = new Staff(jsUser); //Represents a single instance of the Staff class
           const newRow = document.createElement('tr');
 
-          //Populate the staff table with user data from our Staff instance.
+          //Populate the DOM table with user data from our Staff instance.
           newRow.innerHTML = `
-          <td><img src="${staffMember.picture}" alt="Profile Picture"></td> 
+          <td><img src="${staffMember.picture}" alt="Staff Picture"></td> 
           <td>${staffMember.name}</td>
           <td>${staffMember.surname}</td>
           <td>${staffMember.email}</td>
@@ -167,12 +216,20 @@ window.addEventListener('load', () => {
           <td>${staffMember.expectedRTime}</td>
           `;
           staffTableBody.appendChild(newRow);
+
+          staffMap.set(staffID, staffMember); //We are storing this instance in our map so we can use it outside of the promise
         }
         staffRowSelection(); //Enables the selection of rows in staff table
       })
       .catch((error) => console.log('Error fetching users: ', error));
   })();
 });
+
+function getRowId() {
+  const name = tableRow[0].getElementsByTagName('td')[1].innerText;
+  const surname = tableRow[0].getElementsByTagName('td')[2].innerText;
+  return name + '.' + surname;
+}
 
 /** STAFF ROW SELECTION
  * @description - This function applies a specific css styling class for mouse selected rows of staff table.
@@ -323,68 +380,41 @@ function convertHoursToMinutes(time) {
   return hours * 60 + minutes;
 }
 
-const staffMap = new Map();
-
-//Initialize the return time calculator with the current time
-
 /** BUTTON handlers for populating the outTime, duration and expected return
  */
 outButton.addEventListener('click', function () {
-  // const tableRow = document.getElementsByClassName('selectedRow');
-
   if (tableRow.length > 0) {
+    const outTime = timeStamp();
     const userDuration = getUserDuration(); //Asks the user for duration and validates, returns time in minutes format
+    const userDurationFormatted = convertMinutesToHours(userDuration); //Formats from minutes to hours, returns in HH:MM format.
     const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes());
+    const expectedRTimeFormatted = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time, returns in HH:MM format.
 
-    //Creating an object with the selected table row elements for this Event
-    const jsUser = {
-      picture: tableRow[0].getElementsByTagName('td')[0].innerHTML,
-      name: tableRow[0].getElementsByTagName('td')[1].innerText,
-      surname: tableRow[0].getElementsByTagName('td')[2].innerText,
-      email: tableRow[0].getElementsByTagName('td')[3].innerText
-    };
+    const staffID = getRowId();
+    const staffInstance = staffMap.get(staffID);
 
-    //Creating an entry for our staffMap so we can retrieve it later
-    const staffID = jsUser.name + '.' + jsUser.surname; //Uses the user's first name as staffID for our map
-
-    if (!staffMap.has(staffID)) {
-      //If our map does not have an entry of this staff, create one
-
-      //Creating a new Staff instance and setting its properties
-      const staffInstance = new Staff(jsUser);
-      staffInstance.status = 'Out';
-      staffInstance.outTime = timeStamp(); //Uses the Date object to get current time, returns in HH:MM format.
-      staffInstance.duration = convertMinutesToHours(userDuration); //Formats from minutes to hours, returns in HH:MM format.
-      staffInstance.expectedRTime = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time, returns in HH:MM format.
-
+    if (staffInstance) {
       //Updating the page with Staff instance properties for visibility
-      tableRow[0].cells[4].innerHTML = staffInstance.status;
-      tableRow[0].cells[5].innerHTML = staffInstance.outTime;
-      tableRow[0].cells[6].innerHTML = staffInstance.duration;
-      tableRow[0].cells[7].innerHTML = staffInstance.expectedRTime;
+      tableRow[0].cells[5].innerHTML = outTime;
+      tableRow[0].cells[6].innerHTML = userDurationFormatted;
+      tableRow[0].cells[7].innerHTML = expectedRTimeFormatted;
 
-      staffMap.set(staffID, staffInstance);
+      //Marks staff as out and checks for lateness
+      staffInstance.staffOut(outTime, expectedRTimeFormatted); //staffOut method sets the instance status property to Out and updated the HTML DOM element as well
+      staffInstance.checkLateness(); //Running the checkLateness method from our newly created instance, which initiates lateness check interval
     }
-    staffMap.get(staffID).checkLateness();
-    staffMap.get(staffID).staffOut();
 
-    tableRow[0].classList.toggle('selectedRow');
+    tableRow[0].classList.toggle('selectedRow'); //Removes the CSS class from the row
   }
 });
 
 inButton.addEventListener('click', function () {
   if (tableRow.length > 0) {
-    //Creating an object with the selected table row elements for this Event
-    const jsUser = {
-      name: tableRow[0].getElementsByTagName('td')[1].innerText,
-      surname: tableRow[0].getElementsByTagName('td')[2].innerText
-    };
-
-    const staffID = jsUser.name + '.' + jsUser.surname; //Uses the user's first name as staffID for our map
+    const staffID = getRowId();
     const staffInstance = staffMap.get(staffID);
 
     if (staffInstance) {
-      staffMap.get(staffID).staffIn();
+      staffInstance.staffIn();
       tableRow[0].classList.toggle('selectedRow');
     }
   }
@@ -449,7 +479,7 @@ addBtn.addEventListener('click', () => {
 });
 
 clearBtn.addEventListener('click', () => {
-  const tableRow = deliveryBody.getElementsByClassName('selectedRow');
+  // const dableRow = deliveryBody.getElementsByClassName('selectedRow');
 
   for (let i = 0; i < tableRow.length; i++) {
     tableRow[i].remove();
