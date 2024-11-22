@@ -198,7 +198,7 @@ window.addEventListener('load', () => {
         for (let i = 0; i < userData.length; i++) {
           //We are parsing the JSON data into an object, where we only want picture, name, surname and email.
           const jsUser = {
-            picture: userData[i].picture.large,
+            picture: userData[i].picture.medium,
             name: userData[i].name.first,
             surname: userData[i].name.last,
             email: userData[i].email
