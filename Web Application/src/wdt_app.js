@@ -82,8 +82,9 @@ class Staff extends Employee {
     const checkIfLate = setInterval(() => {
       if (this.status === 'Out') {
         const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
+        
+        if (expectedReturnTimeInMins < currentTimeInMinutes()) {
 
-        if (expectedReturnTimeInMins <= currentTimeInMinutes()) {
           const toastContainer = document.getElementsByClassName('toast-container')[0];
           const id = `${this.name}.${this.surname}`;
 
@@ -101,7 +102,7 @@ class Staff extends Employee {
             <div class="toast-body">
               <img src="${this.picture}" alt="Staff Picture">
               <p>${this.name} ${this.surname} is late!</p>
-              <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
+              <p>Late by: ${convertMinutesToHours(currentTimeInMinutes() - expectedReturnTimeInMins)} mins</p>
             </div>
           </div>
         `;
@@ -122,7 +123,7 @@ class Staff extends Employee {
       } else {
         clearInterval(checkIfLate);
       }
-    }, 1000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
+    }, 60000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
@@ -140,7 +141,7 @@ class Delivery extends Employee {
     const checkIfLate = setInterval(() => {
       const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
 
-      if (expectedReturnTimeInMins <= currentTimeInMinutes()) {
+      if (expectedReturnTimeInMins < currentTimeInMinutes()) {
         const toastContainer = document.getElementsByClassName('toast-container')[0];
         const id = `${this.name}.${this.surname}`;
 
@@ -157,7 +158,10 @@ class Delivery extends Employee {
           </div>
           <div class="toast-body">
             <p>${this.name} ${this.surname} is late!</p>
-            <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
+            <p>Return time was: ${this.expectedRTime}</p>
+            <p>Phone number: ${this.phone}</p>
+            <p>Adress: ${this.adress}</p>
+            <p>Late by: ${convertMinutesToHours(currentTimeInMinutes() - expectedReturnTimeInMins)} mins</p>
           </div>
       </div>
       `;
@@ -174,7 +178,7 @@ class Delivery extends Employee {
         });
         clearInterval(checkIfLate);
       }
-    }, 1000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
+    }, 60000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
