@@ -16,6 +16,8 @@ const MONTHS = [
 ];
 
 // DOM Elements
+const tableRow = document.getElementsByClassName('selectedRow');
+
 const staffTable = document.getElementById('staff'); //Main table of staff members
 const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff table body
 const inButton = document.getElementById('btn-in');
@@ -39,7 +41,7 @@ const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
 
 // Date variables
 let d; // Where we will be storing and updating date object
-let currentTimeInMinutes; //Current time in minutes, for use in calculations
+// let currentTimeInMinutes; //Current time in minutes, for use in calculations
 
 class Employee {
   constructor(name, surname) {
@@ -49,45 +51,54 @@ class Employee {
 }
 
 class Staff extends Employee {
-  constructor(user) {
-    super(user.name.first, user.name.last); //Inherits name and surname from Employee
-    this.picture = user.picture.large; //Staff-specific properties
-    this.email = user.email;
+  constructor(JSObject) {
+    super(JSObject.name, JSObject.surname); //Inherits name and surname from Employee
+    this.picture = JSObject.picture; //Staff-specific properties
+    this.email = JSObject.email;
     this.status = 'In';
-    this.outTime = 0;
-    this.duration = 0;
-    this.expectedRTime = 0;
-  }
-  updateRow(row) {
-    row.cells[4].textContent = this.status;
-    row.cells[5].textContent = this.outTime;
-    row.cells[6].textContent = this.duration;
-    row.cells[7].textContent = this.expectedRTime;
+    this.outTime = '';
+    this.duration = '';
+    this.expectedRTime = '';
   }
 
-  // checkLateness() {
-  //   const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
-  //   const checkIfLate = setInterval(() => {
-  //     const toastContent = document.createElement('div');
+  staffOut() {
+    this.status = 'Out';
+    tableRow[0].cells[4].innerHTML = this.status; //Changes the HTML element status
+  }
 
-  //     if (expectedReturnTimeInMins <= currentTimeInMinutes) {
-  //       toastContent.innerHTML = `
-  //       ${profilePicture}
-  //       <p>${this.name} ${surname} is late!</p>
-  //       <p>Late by: ${currentTimeInMinutes - expectedReturnTimeInMins} mins</p>
-  //       `;
-  //       toastBody.appendChild(toastContent);
+  staffIn() {
+    this.status = 'In';
+    tableRow[0].cells[4].innerHTML = this.status; //Changes the HTML element status
+  }
 
-  //       toastBootstrap.show();
-  //       clearInterval(checkIfLate);
+  checkLateness() {
+    const checkIfLate = setInterval(() => {
+      if (this.status === 'Out') {
+        const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
 
-  //       toastWindow.addEventListener('hidden.bs.toast', () => {
-  //         toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
-  //       });
-  //     }
-  //   }, 1000);
-  //   return checkIfLate;
-  // }
+        if (expectedReturnTimeInMins <= currentTimeInMinutes()) {
+          const toastContent = document.createElement('div');
+          toastContent.innerHTML = `
+          ${this.picture}
+          <p>${this.name} ${this.surname} is late!</p>
+          <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
+          `;
+          toastBody.appendChild(toastContent);
+
+          toastBootstrap.show();
+          clearInterval(checkIfLate);
+
+          toastWindow.addEventListener('hidden.bs.toast', () => {
+            toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+          });
+        }
+      } else {
+        console.log('Client is back');
+        clearInterval(checkIfLate);
+      }
+    }, 60000); //Checks for lateness with 1 minute interval instead of 1 second to prevent performance issues
+    return checkIfLate;
+  }
 }
 
 class Delivery extends Employee {
@@ -104,10 +115,10 @@ class Delivery extends Employee {
     const checkIfLate = setInterval(() => {
       const toastContent = document.createElement('div');
 
-      if (expectedReturnTimeInMins <= currentTimeInMinutes) {
+      if (expectedReturnTimeInMins <= currentTimeInMinutes()) {
         toastContent.innerHTML = `
         <p>${this.name} ${this.surname} is late!</p>
-        <p>Late by: ${currentTimeInMinutes - expectedReturnTimeInMins} mins</p>
+        <p>Late by: ${currentTimeInMinutes() - expectedReturnTimeInMins} mins</p>
         `;
         toastBody.appendChild(toastContent);
 
@@ -118,7 +129,7 @@ class Delivery extends Employee {
           toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
         });
       }
-    }, 1000);
+    }, 60000); //Checks for lateness with 1 minute interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
@@ -132,10 +143,16 @@ window.addEventListener('load', () => {
       .then((response) => response.json())
       .then((data) => {
         const userData = data.results; // Represents the entire array of user data fetched from the API.
-        console.log('userData:', userData);
 
         for (let i = 0; i < userData.length; i++) {
-          const staffMember = new Staff(userData[i]); //Represents a single instance of the Staff class created from individual user's data.
+          const jsUser = {
+            picture: userData[i].picture.large,
+            name: userData[i].name.first,
+            surname: userData[i].name.last,
+            email: userData[i].email
+          };
+
+          const staffMember = new Staff(jsUser); //Represents a single instance of the Staff class created from individual user's data.
           const newRow = document.createElement('tr');
 
           //Populate the staff table with user data from our Staff instance.
@@ -207,7 +224,7 @@ function addZero(i) {
 //IIFE that will keep calling itself with a 1 second delay
 (function updateDateAndTime() {
   d = new Date();
-  currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
+  // currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
   const hh = addZero(d.getHours());
   const mm = addZero(d.getMinutes());
   const ss = addZero(d.getSeconds());
@@ -225,6 +242,18 @@ function addZero(i) {
   //Schedule a new update with 1 second delay between each update
   setTimeout(updateDateAndTime, 1000);
 })();
+
+function timeStamp() {
+  let d = new Date();
+  const hh = addZero(d.getHours());
+  const mm = addZero(d.getMinutes());
+  return `${hh}:${mm}`;
+}
+
+function currentTimeInMinutes() {
+  let d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
 
 /** RETURN TIME CALCULATOR MINUTES
  * @description - Higher order function which takes the current time in minutes, and the additional passed time in minutes.
@@ -294,74 +323,70 @@ function convertHoursToMinutes(time) {
   return hours * 60 + minutes;
 }
 
-//Initialize the return time calculator with the current time
-const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes);
+const staffMap = new Map();
 
-/** UPDATE HTML DOM CELL ELEMENTS
- * @description - Updates the selected row with out time, duration and expected return time.
- * @param {HTMLElement} row - The selected row to populate.
- * @param {String} outTime - The formatted out time in string
- * @param {String} duration - The formated duration in string.
- * @param {String} returnTime - The expected return time in string.
- */
-function updateRowCells(row, outTime, duration, returnTime) {
-  //Convert to OOP
-  row.cells[4].innerHTML = 'Out';
-  row.cells[5].innerHTML = outTime;
-  row.cells[6].innerHTML = duration;
-  row.cells[7].innerHTML = returnTime;
-}
+//Initialize the return time calculator with the current time
 
 /** BUTTON handlers for populating the outTime, duration and expected return
  */
 outButton.addEventListener('click', function () {
-  const selectedRows = document.getElementsByClassName('selectedRow');
+  // const tableRow = document.getElementsByClassName('selectedRow');
 
-  if (selectedRows.length > 0) {
-    const profilePicture = selectedRows[0].getElementsByTagName('td')[0].innerHTML;
-    const name = selectedRows[0].getElementsByTagName('td')[1].innerText;
-    const surname = selectedRows[0].getElementsByTagName('td')[2].innerText;
-
-    const hh = addZero(d.getHours());
-    const mm = addZero(d.getMinutes());
-
-    const outTimeStamp = `${hh}:${mm}`;
+  if (tableRow.length > 0) {
     const userDuration = getUserDuration(); //Asks the user for duration and validates, returns time in minutes format
-    const formattedDuration = convertMinutesToHours(userDuration); //Formats from minutes to HH:MM
-    const expectedReturnTime = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time and return sin HH:MM format
-    console.log('expectedReturnTime:', expectedReturnTime);
-    const expectedReturnTimeInMins = calculateReturnTime(userDuration);
+    const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes());
 
-    updateRowCells(selectedRows[0], outTimeStamp, formattedDuration, expectedReturnTime);
+    //Creating an object with the selected table row elements for this Event
+    const jsUser = {
+      picture: tableRow[0].getElementsByTagName('td')[0].innerHTML,
+      name: tableRow[0].getElementsByTagName('td')[1].innerText,
+      surname: tableRow[0].getElementsByTagName('td')[2].innerText,
+      email: tableRow[0].getElementsByTagName('td')[3].innerText
+    };
 
-    const checkIfLate = setInterval(() => {
-      const toastContent = document.createElement('div');
-      if (expectedReturnTimeInMins <= currentTimeInMinutes) {
-        //Less or Equals to, so we dont have to wait another minute while testing :/
+    //Creating an entry for our staffMap so we can retrieve it later
+    const staffID = jsUser.name + '.' + jsUser.surname; //Uses the user's first name as staffID for our map
 
-        toastContent.innerHTML = `
-        ${profilePicture}
-        <p>${name} ${surname} is late!</p>
-        <p>Late by: ${currentTimeInMinutes - expectedReturnTimeInMins} mins</p>
-        `;
-        toastBody.appendChild(toastContent);
+    if (!staffMap.has(staffID)) {
+      //If our map does not have an entry of this staff, create one
 
-        toastBootstrap.show();
-        clearInterval(checkIfLate);
+      //Creating a new Staff instance and setting its properties
+      const staffInstance = new Staff(jsUser);
+      staffInstance.status = 'Out';
+      staffInstance.outTime = timeStamp(); //Uses the Date object to get current time, returns in HH:MM format.
+      staffInstance.duration = convertMinutesToHours(userDuration); //Formats from minutes to hours, returns in HH:MM format.
+      staffInstance.expectedRTime = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time, returns in HH:MM format.
 
-        toastWindow.addEventListener('hidden.bs.toast', () => {
-          toastContent.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
-        });
-      }
-    }, 1000);
-    // toastContent.remove(); //Might want to clear up the div so it can be reused
+      //Updating the page with Staff instance properties for visibility
+      tableRow[0].cells[4].innerHTML = staffInstance.status;
+      tableRow[0].cells[5].innerHTML = staffInstance.outTime;
+      tableRow[0].cells[6].innerHTML = staffInstance.duration;
+      tableRow[0].cells[7].innerHTML = staffInstance.expectedRTime;
+
+      staffMap.set(staffID, staffInstance);
+    }
+    staffMap.get(staffID).checkLateness();
+    staffMap.get(staffID).staffOut();
+
+    tableRow[0].classList.toggle('selectedRow');
   }
 });
 
 inButton.addEventListener('click', function () {
-  const status = document.getElementsByClassName('selectedRow');
-  if (status.length > 0) {
-    status[0].cells[4].innerHTML = 'In';
+  if (tableRow.length > 0) {
+    //Creating an object with the selected table row elements for this Event
+    const jsUser = {
+      name: tableRow[0].getElementsByTagName('td')[1].innerText,
+      surname: tableRow[0].getElementsByTagName('td')[2].innerText
+    };
+
+    const staffID = jsUser.name + '.' + jsUser.surname; //Uses the user's first name as staffID for our map
+    const staffInstance = staffMap.get(staffID);
+
+    if (staffInstance) {
+      staffMap.get(staffID).staffIn();
+      tableRow[0].classList.toggle('selectedRow');
+    }
   }
 });
 
@@ -424,9 +449,9 @@ addBtn.addEventListener('click', () => {
 });
 
 clearBtn.addEventListener('click', () => {
-  const selectedRows = deliveryBody.getElementsByClassName('selectedRow');
+  const tableRow = deliveryBody.getElementsByClassName('selectedRow');
 
-  for (let i = 0; i < selectedRows.length; i++) {
-    selectedRows[i].remove();
+  for (let i = 0; i < tableRow.length; i++) {
+    tableRow[i].remove();
   }
 });
