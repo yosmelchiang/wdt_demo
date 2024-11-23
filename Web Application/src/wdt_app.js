@@ -23,6 +23,7 @@ const tableRow = document.getElementsByClassName('selectedRow');
 
 const staffTable = document.getElementById('staff'); //Main table of staff members
 const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff table body
+
 const inButton = document.getElementById('btn-in');
 const outButton = document.getElementById('btn-out');
 
@@ -66,25 +67,24 @@ class Staff extends Employee {
     this.expectedRTime = '';
   }
 
-  staffOut(outTime, expectedRTime) {
+  staffOut(row, outTime, expectedRTime) {
     this.outTime = outTime;
     this.expectedRTime = expectedRTime;
     this.status = 'Out';
-    tableRow[0].cells[4].innerHTML = this.status; //Changes the HTML element status
+    row.cells[4].innerHTML = this.status; //Changes the HTML element status
   }
 
-  staffIn() {
+  staffIn(row) {
     this.status = 'In';
-    tableRow[0].cells[4].innerHTML = this.status; //Changes the HTML element status
+    row.cells[4].innerHTML = this.status; //Changes the HTML element status
   }
 
   checkLateness() {
     const checkIfLate = setInterval(() => {
       if (this.status === 'Out') {
         const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
-        
-        if (expectedReturnTimeInMins < currentTimeInMinutes()) {
 
+        if (expectedReturnTimeInMins < currentTimeInMinutes()) {
           const toastContainer = document.getElementsByClassName('toast-container')[0];
           const id = `${this.name}.${this.surname}`;
 
@@ -102,7 +102,9 @@ class Staff extends Employee {
             <div class="toast-body">
               <img src="${this.picture}" alt="Staff Picture">
               <p>${this.name} ${this.surname} is late!</p>
-              <p>Late by: ${convertMinutesToHours(currentTimeInMinutes() - expectedReturnTimeInMins)} mins</p>
+              <p>Late by: ${convertMinutesToHours(
+                currentTimeInMinutes() - expectedReturnTimeInMins
+              )} mins</p>
             </div>
           </div>
         `;
@@ -161,7 +163,9 @@ class Delivery extends Employee {
             <p>Return time was: ${this.expectedRTime}</p>
             <p>Phone number: ${this.phone}</p>
             <p>Adress: ${this.adress}</p>
-            <p>Late by: ${convertMinutesToHours(currentTimeInMinutes() - expectedReturnTimeInMins)} mins</p>
+            <p>Late by: ${convertMinutesToHours(
+              currentTimeInMinutes() - expectedReturnTimeInMins
+            )} mins</p>
           </div>
       </div>
       `;
@@ -229,9 +233,9 @@ window.addEventListener('load', () => {
   })();
 });
 
-function getRowId() {
-  const name = tableRow[0].getElementsByTagName('td')[1].innerText;
-  const surname = tableRow[0].getElementsByTagName('td')[2].innerText;
+function getRowId(row) {
+  const name = row.getElementsByTagName('td')[1].innerText;
+  const surname = row.getElementsByTagName('td')[2].innerText;
   return name + '.' + surname;
 }
 
@@ -387,39 +391,57 @@ function convertHoursToMinutes(time) {
 /** BUTTON handlers for populating the outTime, duration and expected return
  */
 outButton.addEventListener('click', function () {
-  if (tableRow.length > 0) {
-    const outTime = timeStamp();
+  const rows = staffTableBody.getElementsByClassName('selectedRow');
+  const rowsArray = Array.from(rows)
+
+  if (rowsArray.length > 0) {
     const userDuration = getUserDuration(); //Asks the user for duration and validates, returns time in minutes format
-    const userDurationFormatted = convertMinutesToHours(userDuration); //Formats from minutes to hours, returns in HH:MM format.
-    const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes());
-    const expectedRTimeFormatted = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time, returns in HH:MM format.
 
-    const staffID = getRowId();
-    const staffInstance = staffMap.get(staffID);
+    for (let i = 0; i < rowsArray.length; i++) {
+      const row = rowsArray[i];
 
-    if (staffInstance) {
-      //Updating the page with Staff instance properties for visibility
-      tableRow[0].cells[5].innerHTML = outTime;
-      tableRow[0].cells[6].innerHTML = userDurationFormatted;
-      tableRow[0].cells[7].innerHTML = expectedRTimeFormatted;
+      const outTime = timeStamp();
+      const userDurationFormatted = convertMinutesToHours(userDuration); //Formats from minutes to hours, returns in HH:MM format.
+      const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes());
+      const expectedRTimeFormatted = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time, returns in HH:MM format.
 
-      //Marks staff as out and checks for lateness
-      staffInstance.staffOut(outTime, expectedRTimeFormatted); //staffOut method sets the instance status property to Out and updated the HTML DOM element as well
-      staffInstance.checkLateness(); //Running the checkLateness method from our newly created instance, which initiates lateness check interval
+      const staffID = getRowId(row);
+      const staffInstance = staffMap.get(staffID);
+      
+      if (staffInstance) {
+        //Updating the page with Staff instance properties for visibility
+        row.cells[5].innerHTML = outTime;
+        row.cells[6].innerHTML = userDurationFormatted;
+        row.cells[7].innerHTML = expectedRTimeFormatted;
+        
+        //Marks staff as out and checks for lateness
+        staffInstance.staffOut(row, outTime, expectedRTimeFormatted); //staffOut method sets the instance status property to Out and updated the HTML DOM element as well
+        staffInstance.checkLateness(); //Running the checkLateness method from our newly created instance, which initiates lateness check interval
+        
+      }
+      
+      row.classList.remove('selectedRow'); //Removes the CSS class from the row
+
     }
-
-    tableRow[0].classList.toggle('selectedRow'); //Removes the CSS class from the row
   }
 });
 
 inButton.addEventListener('click', function () {
-  if (tableRow.length > 0) {
-    const staffID = getRowId();
-    const staffInstance = staffMap.get(staffID);
+  const rows = staffTableBody.getElementsByClassName('selectedRow');
+  const rowsArray = Array.from(rows)
 
-    if (staffInstance) {
-      staffInstance.staffIn();
-      tableRow[0].classList.toggle('selectedRow');
+  if (rowsArray.length > 0) {
+    for (let i = 0; i < rowsArray.length; i++) {
+      const row = rowsArray[i];
+
+      const staffID = getRowId(row);
+      const staffInstance = staffMap.get(staffID);
+
+      if (staffInstance) {
+        staffInstance.staffIn(row);
+      }
+
+      row.classList.remove('selectedRow');
     }
   }
 });
