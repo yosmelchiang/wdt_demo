@@ -71,12 +71,21 @@ class Staff extends Employee {
     this.outTime = outTime;
     this.expectedRTime = expectedRTime;
     this.status = 'Out';
-    row.cells[4].innerHTML = this.status; //Changes the HTML element status
+    row.cells[4].innerHTML = this.status; //Changes the HTML element status to 'Out'
   }
 
   staffIn(row) {
+    //Uppdating Class properties
     this.status = 'In';
-    row.cells[4].innerHTML = this.status; //Changes the HTML element status
+    this.outTime = '';
+    this.duration = '';
+    this.expectedRTime = '';
+
+    //Updating HTML elements, there has to be a cleaner method for this, maybe a function?
+    row.cells[4].innerHTML = this.status; //Changes the HTML element status to 'In'
+    row.cells[5].innerHTML = '';
+    row.cells[6].innerHTML = '';
+    row.cells[7].innerHTML = '';
   }
 
   checkLateness() {
@@ -392,7 +401,7 @@ function convertHoursToMinutes(time) {
  */
 outButton.addEventListener('click', function () {
   const rows = staffTableBody.getElementsByClassName('selectedRow');
-  const rowsArray = Array.from(rows)
+  const rowsArray = Array.from(rows);
 
   if (rowsArray.length > 0) {
     const userDuration = getUserDuration(); //Asks the user for duration and validates, returns time in minutes format
@@ -407,28 +416,27 @@ outButton.addEventListener('click', function () {
 
       const staffID = getRowId(row);
       const staffInstance = staffMap.get(staffID);
-      
+
       if (staffInstance) {
         //Updating the page with Staff instance properties for visibility
         row.cells[5].innerHTML = outTime;
         row.cells[6].innerHTML = userDurationFormatted;
         row.cells[7].innerHTML = expectedRTimeFormatted;
-        
+
         //Marks staff as out and checks for lateness
         staffInstance.staffOut(row, outTime, expectedRTimeFormatted); //staffOut method sets the instance status property to Out and updated the HTML DOM element as well
         staffInstance.checkLateness(); //Running the checkLateness method from our newly created instance, which initiates lateness check interval
-        
       }
-      
-      row.classList.remove('selectedRow'); //Removes the CSS class from the row
 
+      //Removes the CSS class from the row after its been handled.
+      row.classList.remove('selectedRow');
     }
   }
 });
 
 inButton.addEventListener('click', function () {
   const rows = staffTableBody.getElementsByClassName('selectedRow');
-  const rowsArray = Array.from(rows)
+  const rowsArray = Array.from(rows);
 
   if (rowsArray.length > 0) {
     for (let i = 0; i < rowsArray.length; i++) {
@@ -504,6 +512,9 @@ addBtn.addEventListener('click', () => {
   deliveryRowSelection(); //Enables the selection of rows in delivery board
 });
 
+//Clears only one row
+//And also clicking the clear button does nothing else but remove the row
+  //Maybe we should cancel the checkLateneess method when clicking clear?
 clearBtn.addEventListener('click', () => {
   // const dableRow = deliveryBody.getElementsByClassName('selectedRow');
 
