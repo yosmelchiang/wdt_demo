@@ -1,3 +1,5 @@
+import { validateInputs } from "./wdt_utils.js";
+
 //Constants
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const MONTHS = [
@@ -15,8 +17,9 @@ const MONTHS = [
   'December'
 ];
 
-//We are going to use this map to store Staff instances created by the outButton
+//We are going to use maps for storing both our Staff and Delivery instances, this way we can interact with their properties and methods by accessing them from the map
 const staffMap = new Map();
+const deliveryMap = new Map();
 
 // DOM Elements
 const tableRow = document.getElementsByClassName('selectedRow');
@@ -27,16 +30,10 @@ const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff tabl
 const inButton = document.getElementById('btn-in');
 const outButton = document.getElementById('btn-out');
 
-const schVehicle = document.getElementById('sch-vehicle');
-const schName = document.getElementById('sch-fname');
-const schSurname = document.getElementById('sch-lname');
-const schPhone = document.getElementById('sch-phone');
-const schAdress = document.getElementById('sch-adress');
-const schReturnTime = document.getElementById('sch-rtime');
 const addBtn = document.getElementById('btn-add');
 
 const deliveryTable = document.getElementById('delivery'); //Main delivery board table
-const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
+// const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
 const clearBtn = document.getElementById('btn-clear');
 
 const toastWindow = document.getElementById('liveToast');
@@ -72,6 +69,7 @@ class Staff extends Employee {
     this.expectedRTime = expectedRTime;
     this.status = 'Out';
     row.cells[4].innerHTML = this.status; //Changes the HTML element status to 'Out'
+    // this.checkLateness() //Initialize check lateness
   }
 
   staffIn(row) {
@@ -140,12 +138,12 @@ class Staff extends Employee {
 }
 
 class Delivery extends Employee {
-  constructor(vehicle, name, surname, phone, adress, expectedRTime) {
-    super(name, surname); //Inherit name and surname from Employee
-    this.vehicle = vehicle;
-    this.phone = phone;
-    this.adress = adress;
-    this.expectedRTime = expectedRTime;
+  constructor(JSObject) {
+    super(JSObject.name, JSObject.surname); //Inherit name and surname from Employee
+    this.vehicle = JSObject.vehicle;
+    this.phone = JSObject.phone;
+    this.adress = JSObject.adress;
+    this.expectedRTime = JSObject.expectedRTime;
   }
 
   checkLateness() {
@@ -218,23 +216,29 @@ window.addEventListener('load', () => {
           };
 
           const staffID = jsUser.name + '.' + jsUser.surname; //We are creating an ID based on the user's first name and surname for our map
-          const staffMember = new Staff(jsUser); //Represents a single instance of the Staff class
-          const newRow = document.createElement('tr');
 
-          //Populate the DOM table with user data from our Staff instance.
-          newRow.innerHTML = `
-          <td><img src="${staffMember.picture}" alt="Staff Picture"></td> 
-          <td>${staffMember.name}</td>
-          <td>${staffMember.surname}</td>
-          <td>${staffMember.email}</td>
-          <td>${staffMember.status}</td>
-          <td>${staffMember.outTime}</td>
-          <td>${staffMember.duration}</td>
-          <td>${staffMember.expectedRTime}</td>
-          `;
-          staffTableBody.appendChild(newRow);
+          //If the staff is not already in the map, create an instance and popuate the table
+          if (!staffMap.has(staffID)) {
+            const staffMember = new Staff(jsUser); //Represents a single instance of the Staff class
+            const newRow = document.createElement('tr');
 
-          staffMap.set(staffID, staffMember); //We are storing this instance in our map so we can use it outside of the promise
+            //Populate the DOM table with user data from our Staff instance.
+            newRow.innerHTML = `
+            <td><img src="${staffMember.picture}" alt="Staff Picture"></td> 
+            <td>${staffMember.name}</td>
+            <td>${staffMember.surname}</td>
+            <td>${staffMember.email}</td>
+            <td>${staffMember.status}</td>
+            <td>${staffMember.outTime}</td>
+            <td>${staffMember.duration}</td>
+            <td>${staffMember.expectedRTime}</td>
+            `;
+            staffTableBody.appendChild(newRow);
+
+            staffMap.set(staffID, staffMember); //We are storing this instance in our map so we can use it outside of the promise
+          } else {
+            console.log('Something went wrong');
+          }
         }
         staffRowSelection(); //Enables the selection of rows in staff table
       })
@@ -270,6 +274,7 @@ function staffRowSelection() {
  * We have achieved this by checking if rows have a certain attribute (delivery in this case) if not, add the attribute and also add the eventListener so we can interact with it.
  */
 function deliveryRowSelection() {
+  const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
   const dRows = deliveryBody.getElementsByTagName('tr');
 
   for (let i = 0; i < dRows.length; i++) {
@@ -456,69 +461,68 @@ inButton.addEventListener('click', function () {
 
 // Schedule delivery stuff
 
-function validateInputs() {
-  let errorMessage = '';
-
-  if (schName.value.trim() === '' || !isNaN(schName.value)) {
-    errorMessage = 'Name cannot be empty or a number.';
-  } else if (schSurname.value.trim() === '' || !isNaN(schSurname.value)) {
-    errorMessage = 'Surname cannot be empty or a number.';
-  } else if (schPhone.value.trim() === '') {
-    errorMessage = 'Phone cannot be empty or a number.';
-  } else if (isNaN(schPhone.value)) {
-    errorMessage = 'Phone must be a valid number.'; //Should we use this validation at all?
-    // HTML input type is number so that is already sorted out, but what about length? Video shows 7 digits phone validation
-  } else if (schAdress.value.trim() === '') {
-    errorMessage = 'Adress cannot be empty.';
-  } else if (schReturnTime.value.trim() === '') {
-    errorMessage = 'Return time cannot be empty.';
-  }
-
-  return errorMessage;
-}
 addBtn.addEventListener('click', () => {
-  const errorMessage = validateInputs();
+  const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
+
+  const jsUser = {
+    vehicle: document.getElementById('sch-vehicle').value,
+    name: document.getElementById('sch-fname').value,
+    surname: document.getElementById('sch-lname').value,
+    phone: document.getElementById('sch-phone').value,
+    adress: document.getElementById('sch-adress').value,
+    expectedRTime: document.getElementById('sch-rtime').value
+  };
+
+  const errorMessage = validateInputs(jsUser);
 
   if (errorMessage) {
     alert(errorMessage);
-    return;
+    return; //Do not continue the rest of the code block once message has been shown to the user
   }
 
-  const delivery = new Delivery(
-    schVehicle.value,
-    schName.value,
-    schSurname.value,
-    schPhone.value,
-    schAdress.value,
-    schReturnTime.value
-  );
+  const deliveryID = jsUser.name + '.' + jsUser.surname
 
-  //Populate delivery board table
-  const newRow = document.createElement('tr');
+  if(!deliveryMap.has(deliveryID)) {
+    const deliveryMember = new Delivery(jsUser);
+    const newRow = document.createElement('tr');
 
-  newRow.innerHTML = `
-    <td>${delivery.vehicle}</td>
-    <td>${delivery.name}</td>
-    <td>${delivery.surname}</td>
-    <td>${delivery.phone}</td>
-    <td>${delivery.adress}</td>
-    <td>${delivery.expectedRTime}</td>
+    //Populate delivery board table
+    newRow.innerHTML = `
+    <td>${deliveryMember.vehicle}</td>
+    <td>${deliveryMember.name}</td>
+    <td>${deliveryMember.surname}</td>
+    <td>${deliveryMember.phone}</td>
+    <td>${deliveryMember.adress}</td>
+    <td>${deliveryMember.expectedRTime}</td>
     `;
 
-  deliveryBody.appendChild(newRow);
-
-  delivery.checkLateness();
-
-  deliveryRowSelection(); //Enables the selection of rows in delivery board
+    deliveryBody.appendChild(newRow);
+    deliveryMap.set(deliveryID, deliveryMember);
+    
+    deliveryMember.checkLateness();
+    deliveryRowSelection(); //Enables the selection of rows in delivery board
+  } else {
+    alert('This user has already been added to the Delivery Board')
+  }
+  
 });
 
 //Clears only one row
 //And also clicking the clear button does nothing else but remove the row
-  //Maybe we should cancel the checkLateneess method when clicking clear?
+//Maybe we should cancel the checkLateneess method when clicking clear?
 clearBtn.addEventListener('click', () => {
-  // const dableRow = deliveryBody.getElementsByClassName('selectedRow');
+  const rows = document.getElementsByClassName('selectedRow');
 
-  for (let i = 0; i < tableRow.length; i++) {
-    tableRow[i].remove();
+  const rowsArray = Array.from(rows);
+  
+  if(rowsArray.length > 0) {
+    for (let i = 0; i < rowsArray.length; i++) {
+      const row = rowsArray[i]
+      row.remove();
+      console.log(`${row} was removed`)
+    }
   }
+
+  //If we delete an item from map, will it get rid of the instance and its method? 
+  //Map.delete(deliveryId)
 });
