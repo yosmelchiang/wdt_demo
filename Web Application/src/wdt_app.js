@@ -2,7 +2,7 @@ import { staffUserGet } from './api/wdt_api.js';
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
 import {
   timeStamp,
-  displayDateAndTime,
+  digitalClock,
   currentTimeInMinutes,
   convertMinutesToHours,
   returnTimeFormat,
@@ -15,7 +15,7 @@ import { fetchAdress, toggleMap } from './components/wdt_map.js';
 
 //Initializes the date and real-time display clock
 setInterval(() => {
-  footer.innerText = displayDateAndTime();
+  footer.innerText = digitalClock();
 }, 1000);
 
 // #region DOM Elements
@@ -89,7 +89,6 @@ outButton.addEventListener('click', function () {
 
         //Marks staff as out and checks for lateness
         staffInstance.staffOut(row, outTime, expectedRTimeFormatted); //staffOut method sets the instance status property to Out and updated the HTML DOM element as well
-        // staffInstance.checkLateness(); //Running the checkLateness method from our newly created instance, which initiates lateness check interval
       }
 
       //Removes the CSS class from the row after its been handled.
@@ -167,7 +166,7 @@ addBtn.addEventListener('click', () => {
 
     populateRow(deliveryTableBody, newDelivery, 'deliveryRow');
 
-    newDelivery.checkLateness();
+    newDelivery.deliveryDriverIsLate();
     enableRowSelection(deliveryTableBody, 'deliveryRow');
 
     //Clear the table values
@@ -205,7 +204,7 @@ clearBtn.addEventListener('click', () => {
 const btnMyLocation = document.getElementById('btn-location');
 
 btnMyLocation.addEventListener('click', () => {
-  const ADRESS = document.getElementById('sch-adress');
+  const adressInput = document.getElementById('sch-adress');
 
   navigator.geolocation.getCurrentPosition((position) => {
     const lat = position.coords.latitude;
@@ -213,7 +212,7 @@ btnMyLocation.addEventListener('click', () => {
 
     fetchAdress(lat, lng)
       .then((data) => {
-        ADRESS.value = data;
+        adressInput.value = data;
       })
       .catch((error) => {
         console.log('Something went wront', error);

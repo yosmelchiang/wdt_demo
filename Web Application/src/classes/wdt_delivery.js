@@ -18,7 +18,7 @@ export class Delivery extends Employee {
     this.expectedRTime = JSObject.expectedRTime;
   }
 
-  checkLateness() {
+  deliveryDriverIsLate() {
     const toastData = {
       id: `${this.name}.${this.surname}`,
       name: this.name,
@@ -40,7 +40,7 @@ export class Delivery extends Employee {
       } else {
         clearInterval(checkIfLate);
       }
-    }, 1000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
+    }, 6000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }

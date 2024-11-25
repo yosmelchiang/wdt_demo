@@ -22,7 +22,7 @@ const DATES = {
 /**
  * The purpose of this function is to provide a real time clock at the bottom of the page
  */
-export function displayDateAndTime() {
+export function digitalClock() {
   const d = new Date();
   const hh = addZero(d.getHours());
   const mm = addZero(d.getMinutes());

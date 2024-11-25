@@ -25,7 +25,7 @@ export class Staff extends Employee {
     this.expectedRTime = expectedRTime;
     this.status = 'Out';
     row.cells[4].innerHTML = this.status; //Changes the HTML element status to 'Out'
-    this.checkLateness(); //Initialize check lateness
+    this.staffMemberIsLate(); //Initialize check lateness
   }
 
   staffIn(row) {
@@ -42,7 +42,7 @@ export class Staff extends Employee {
     row.cells[7].innerHTML = '';
   }
 
-  checkLateness() {
+  staffMemberIsLate() {
     const toastData = {
       id: `${this.name}.${this.surname}`,
       picture: this.picture,
@@ -62,7 +62,7 @@ export class Staff extends Employee {
       } else {
         clearInterval(checkIfLate);
       }
-    }, 1000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
+    }, 6000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
