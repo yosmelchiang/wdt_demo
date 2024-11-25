@@ -1,409 +1,65 @@
-import { validateInputs } from "./wdt_utils.js";
-
-//Constants
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
-];
-
-//We are going to use maps for storing both our Staff and Delivery instances, this way we can interact with their properties and methods by accessing them from the map
-const staffMap = new Map();
-const deliveryMap = new Map();
+import { staffUserGet } from './api/wdt_api.js';
+import { enableRowSelection } from './wdt_event.js';
+import {
+  timeStamp,
+  displayDateAndTime,
+  currentTimeInMinutes,
+  convertMinutesToHours,
+  returnTimeFormat,
+  createReturnTimeCalculator
+} from './utils/wdt_time.js';
+import { getRowId, getUserDuration, populateRow, validateInput } from './utils/wdt_utility.js';
+import { Staff } from './classes/wdt_staff.js';
+import { Delivery } from './classes/wdt_delivery.js';
 
 // DOM Elements
-const tableRow = document.getElementsByClassName('selectedRow');
-
 const staffTable = document.getElementById('staff'); //Main table of staff members
 const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff table body
 
 const inButton = document.getElementById('btn-in');
 const outButton = document.getElementById('btn-out');
 
-const addBtn = document.getElementById('btn-add');
-
 const deliveryTable = document.getElementById('delivery'); //Main delivery board table
-// const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
+const deliveryTableBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
+const addBtn = document.getElementById('btn-add');
 const clearBtn = document.getElementById('btn-clear');
 
-const toastWindow = document.getElementById('liveToast');
-// const toastBody = toastWindow.getElementsByClassName('toast-body')[0];
-const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
+const footer = document.getElementById('dateAndTime');
 
-// createToast('Julio');
+//Initializes the date and real-time display clock
+setInterval(() => {
+  footer.innerText = displayDateAndTime();
+}, 1000);
 
-// Date variables
-let d; // Where we will be storing and updating date object
-// let currentTimeInMinutes; //Current time in minutes, for use in calculations
+//These maps are used for individual instances, which will allow access to the instance properties and methods.
+export const staffMap = new Map();
+export const deliveryMap = new Map();
 
-class Employee {
-  constructor(name, surname) {
-    this.name = name;
-    this.surname = surname;
-  }
-}
-
-class Staff extends Employee {
-  constructor(JSObject) {
-    super(JSObject.name, JSObject.surname); //Inherits name and surname from Employee
-    this.picture = JSObject.picture; //Staff-specific properties
-    this.email = JSObject.email;
-    this.status = 'In';
-    this.outTime = '';
-    this.duration = '';
-    this.expectedRTime = '';
-  }
-
-  staffOut(row, outTime, expectedRTime) {
-    this.outTime = outTime;
-    this.expectedRTime = expectedRTime;
-    this.status = 'Out';
-    row.cells[4].innerHTML = this.status; //Changes the HTML element status to 'Out'
-    // this.checkLateness() //Initialize check lateness
-  }
-
-  staffIn(row) {
-    //Uppdating Class properties
-    this.status = 'In';
-    this.outTime = '';
-    this.duration = '';
-    this.expectedRTime = '';
-
-    //Updating HTML elements, there has to be a cleaner method for this, maybe a function?
-    row.cells[4].innerHTML = this.status; //Changes the HTML element status to 'In'
-    row.cells[5].innerHTML = '';
-    row.cells[6].innerHTML = '';
-    row.cells[7].innerHTML = '';
-  }
-
-  checkLateness() {
-    const checkIfLate = setInterval(() => {
-      if (this.status === 'Out') {
-        const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
-
-        if (expectedReturnTimeInMins < currentTimeInMinutes()) {
-          const toastContainer = document.getElementsByClassName('toast-container')[0];
-          const id = `${this.name}.${this.surname}`;
-
-          //Create the outer div
-          const toast = document.createElement('div');
-
-          //The reason for why we are creating a whole toast section in here instead of html and accessing it is because if
-          //We generate toast elements within a toast container, they will stack, according to bootstrap documentation :)
-          //We also want to get rid of each toast once they are timed out, or closed
-          toast.innerHTML = `
-          <div id="${id}" class="toast text-bg-danger border-0 p-3 mb-3" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header text-bg-danger border-0">
-              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-              <img src="${this.picture}" alt="Staff Picture">
-              <p>${this.name} ${this.surname} is late!</p>
-              <p>Late by: ${convertMinutesToHours(
-                currentTimeInMinutes() - expectedReturnTimeInMins
-              )} mins</p>
-            </div>
-          </div>
-        `;
-
-          toastContainer.appendChild(toast);
-
-          //Activate bootstrap
-          const toastWindow = document.getElementById(`${id}`);
-          const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
-          toastBootstrap.show();
-
-          toastWindow.addEventListener('hidden.bs.toast', () => {
-            toast.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
-          });
-
-          clearInterval(checkIfLate);
-        }
-      } else {
-        clearInterval(checkIfLate);
-      }
-    }, 60000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
-    return checkIfLate;
-  }
-}
-
-class Delivery extends Employee {
-  constructor(JSObject) {
-    super(JSObject.name, JSObject.surname); //Inherit name and surname from Employee
-    this.vehicle = JSObject.vehicle;
-    this.phone = JSObject.phone;
-    this.adress = JSObject.adress;
-    this.expectedRTime = JSObject.expectedRTime;
-  }
-
-  checkLateness() {
-    const checkIfLate = setInterval(() => {
-      const expectedReturnTimeInMins = convertHoursToMinutes(this.expectedRTime); //We can just put this in the if statement to simplify
-
-      if (expectedReturnTimeInMins < currentTimeInMinutes()) {
-        const toastContainer = document.getElementsByClassName('toast-container')[0];
-        const id = `${this.name}.${this.surname}`;
-
-        //Create the outer div
-        const toast = document.createElement('div');
-
-        //The reason for why we are creating a whole toast section in here instead of html and accessing it is because if
-        //We generate toast elements within a toast container, they will stack, according to bootstrap documentation :)
-        //We also want to get rid of each toast once they are timed out, or closed
-        toast.innerHTML = `
-        <div id="${id}" class="toast text-bg-danger border-0 p-3 mb-3" role="alert" aria-live="assertive" aria-atomic="true">
-          <div class="toast-header text-bg-danger border-0">
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
-          <div class="toast-body">
-            <p>${this.name} ${this.surname} is late!</p>
-            <p>Return time was: ${this.expectedRTime}</p>
-            <p>Phone number: ${this.phone}</p>
-            <p>Adress: ${this.adress}</p>
-            <p>Late by: ${convertMinutesToHours(
-              currentTimeInMinutes() - expectedReturnTimeInMins
-            )} mins</p>
-          </div>
-      </div>
-      `;
-
-        toastContainer.appendChild(toast);
-
-        //Activate bootstrap
-        const toastWindow = document.getElementById(`${id}`);
-        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
-        toastBootstrap.show();
-
-        toastWindow.addEventListener('hidden.bs.toast', () => {
-          toast.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
-        });
-        clearInterval(checkIfLate);
-      }
-    }, 60000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
-    return checkIfLate;
-  }
-}
-
+// #region api fetching
 window.addEventListener('load', () => {
-  // This function will use the randomuser.me api to fetch random users
-  // Here we have provided a seed to always fetch the same users and also specified a paremeter of 5 user results
-  // IIFE - Immediately invoked Function Expression - Will run immediately once the page has fully loaded
-  (function fetchUsers() {
-    fetch('https://randomuser.me/api/?results=5&seed=wdt')
-      .then((response) => response.json())
-      .then((data) => {
-        //Our JSON data returns info (object) and results (array) (5)
-        const userData = data.results; // We using only the results array (5) of user data fetched from the API.
+  staffUserGet()
+    .then((users) => {
+      for (const user in users) {
+        const mapKey = user;
+        const mapObject = users[user];
 
-        //We are going to iterate through each array and create an object (jsUser) with specific properties for each.
-        for (let i = 0; i < userData.length; i++) {
-          //We are parsing the JSON data into an object, where we only want picture, name, surname and email.
-          const jsUser = {
-            picture: userData[i].picture.medium,
-            name: userData[i].name.first,
-            surname: userData[i].name.last,
-            email: userData[i].email
-          };
+        if (!staffMap.has(mapKey)) {
+          const newStaff = new Staff(mapObject);
+          staffMap.set(mapKey, newStaff);
 
-          const staffID = jsUser.name + '.' + jsUser.surname; //We are creating an ID based on the user's first name and surname for our map
-
-          //If the staff is not already in the map, create an instance and popuate the table
-          if (!staffMap.has(staffID)) {
-            const staffMember = new Staff(jsUser); //Represents a single instance of the Staff class
-            const newRow = document.createElement('tr');
-
-            //Populate the DOM table with user data from our Staff instance.
-            newRow.innerHTML = `
-            <td><img src="${staffMember.picture}" alt="Staff Picture"></td> 
-            <td>${staffMember.name}</td>
-            <td>${staffMember.surname}</td>
-            <td>${staffMember.email}</td>
-            <td>${staffMember.status}</td>
-            <td>${staffMember.outTime}</td>
-            <td>${staffMember.duration}</td>
-            <td>${staffMember.expectedRTime}</td>
-            `;
-            staffTableBody.appendChild(newRow);
-
-            staffMap.set(staffID, staffMember); //We are storing this instance in our map so we can use it outside of the promise
-          } else {
-            console.log('Something went wrong');
-          }
+          populateRow(staffTableBody, newStaff, 'staffRow');
         }
-        staffRowSelection(); //Enables the selection of rows in staff table
-      })
-      .catch((error) => console.log('Error fetching users: ', error));
-  })();
+      }
+      enableRowSelection(staffTableBody, 'staffRow');
+    })
+    .catch((error) => {
+      console.log('Something went wrong: ', error);
+    });
 });
 
-function getRowId(row) {
-  const name = row.getElementsByTagName('td')[1].innerText;
-  const surname = row.getElementsByTagName('td')[2].innerText;
-  return name + '.' + surname;
-}
+// #endregion
 
-/** STAFF ROW SELECTION
- * @description - This function applies a specific css styling class for mouse selected rows of staff table.
- * @function staffRowSelection - Uses a simple for loop to iterate all the rows and add a class to it that
- * we can use for styling as well as DOM manipulation when interacting with the table.
- */
-function staffRowSelection() {
-  const sRows = staffTableBody.getElementsByTagName('tr');
-
-  for (let i = 0; i < sRows.length; i++) {
-    sRows[i].addEventListener('click', function () {
-      this.classList.toggle('selectedRow');
-    });
-  }
-}
-
-/** DELIVERY BOARD ROW SELECTION
- * @description - This function applies a specific css styling class for mouse selected rows of delivery board table.
- * @function deliveryRowSelection - Compared to the staffRowSelection function, this table is dynamically populated,
- * which means we need to be able to allow each old and new row to be interacted with after creation. This demands the need to apply event listeners to each one.
- * We have achieved this by checking if rows have a certain attribute (delivery in this case) if not, add the attribute and also add the eventListener so we can interact with it.
- */
-function deliveryRowSelection() {
-  const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
-  const dRows = deliveryBody.getElementsByTagName('tr');
-
-  for (let i = 0; i < dRows.length; i++) {
-    const delivery = dRows[i].hasAttribute('delivery');
-
-    if (!delivery) {
-      dRows[i].addEventListener('click', function () {
-        this.classList.toggle('selectedRow');
-      });
-      dRows[i].setAttribute('delivery', 'true');
-    }
-  }
-}
-
-/** DATE AND TIME FUNCTIONS
- * @description - This functions checks wether the returned time variables have a zero next to it or not, if not add one.
- *              - Valid output: 02 h : 50 mins
- *              - Invalid output: 2 h: 5 mins
- * @param {Number} i - We know by default that the Date object returns integers less than 10 without a Zero next to it
- * @returns {Number} - If Date is less than 10, Returns the original number with a Zero concatenated to it
- */
-function addZero(i) {
-  return i < 10 ? `0${i}` : `${i}`;
-}
-
-//IIFE that will keep calling itself with a 1 second delay
-(function updateDateAndTime() {
-  d = new Date();
-  // currentTimeInMinutes = d.getHours() * 60 + d.getMinutes();
-  const hh = addZero(d.getHours());
-  const mm = addZero(d.getMinutes());
-  const ss = addZero(d.getSeconds());
-
-  const currentTime = `${hh}:${mm}:${ss}`;
-  const day = DAYS[d.getDay()];
-  const monthName = MONTHS[d.getMonth()];
-  const date = d.getDate();
-  const year = d.getFullYear();
-  const currentDate = `${day}, ${monthName} ${date}, ${year} at`;
-
-  //Update the DOM with the current date and time.
-  document.getElementById('dateAndTime').textContent = `${currentDate} ${currentTime}`;
-
-  //Schedule a new update with 1 second delay between each update
-  setTimeout(updateDateAndTime, 1000);
-})();
-
-function timeStamp() {
-  let d = new Date();
-  const hh = addZero(d.getHours());
-  const mm = addZero(d.getMinutes());
-  return `${hh}:${mm}`;
-}
-
-function currentTimeInMinutes() {
-  let d = new Date();
-  return d.getHours() * 60 + d.getMinutes();
-}
-
-/** RETURN TIME CALCULATOR MINUTES
- * @description - Higher order function which takes the current time in minutes, and the additional passed time in minutes.
- *              - The inner function alculates these together to return the time in hour back, this is going to be the Expected Return Time.
- * @param {Number} baseMinutes  - Takes the current base time in minutes
- * @returns {Function} - Takes additional time in minutes, which then is calculated to a total time from minutes to hours
- */
-function createReturnTimeCalculator(baseMinutes) {
-  //Outfunc receives the global time in minutes
-  return function (additionalMinutes) {
-    //Inner function receives a specific time in minutes
-    const totalMinutes = baseMinutes + additionalMinutes; //Calculates total minutes for later reference
-    return totalMinutes;
-  };
-}
-
-/** RETURN TIME HH:MM FORMAT
- * @param {Number} totalMinutes - Takes in minuts and turns them to hh:mm
- * @returns {String} - String of hours and minutes
- */
-function returnTimeFormat(totalMinutes) {
-  const hours = parseInt(totalMinutes / 60);
-  const minutes = Math.round((totalMinutes / 60 - hours) * 60);
-  return `${addZero(hours)}:${addZero(minutes)}`;
-}
-
-/** INPUT VALIDATOR
- * @description - Validates the user input for duration.
- *              - We are looking to validate empty input, non numeric values and negative numbers
- * @param {String} input - The user input.
- * @returns {Boolean} - This will be true if the input is invalid, false otherwise
- */
-function isInvalidInput(input) {
-  return input.trim() === '' || isNaN(input) || input <= 0;
-}
-
-/** PROMPT AND CHECKS FOR VALID OUT DURATION
- * @description - Prompts the user for a duration, the prompt is only passed on valid input.
- * @returns {number} - Valid duration in number, no negative numbers allowed.
- */
-function getUserDuration() {
-  while (true) {
-    const userInput = prompt('How long are you going to be gone for?');
-    if (!isInvalidInput(userInput)) {
-      return parseInt(userInput);
-    } else {
-      alert('Invalid input, try again');
-    }
-  }
-}
-
-/** FORMATS OUT DURATION (mins) TO HOURS AND MINUTES ( HH: MM )
- * @description - This function formats the time from user input into a string.
- * @param {Number} totalMinutes - Takes a duration in minutes as a parameter.
- * @returns {String} - Returns a formatted duration string.
- */
-function convertMinutesToHours(totalMinutes) {
-  const hours = parseInt(totalMinutes / 60);
-  const minutes = Math.round(totalMinutes - hours * 60);
-  return minutes === 0 ? `${hours} h` : `${hours} h: ${minutes} m`;
-}
-
-function convertHoursToMinutes(time) {
-  const timeParts = time.split(':');
-  const hours = parseInt(timeParts[0]);
-  const minutes = parseInt(timeParts[1]);
-  return hours * 60 + minutes;
-}
-
-/** BUTTON handlers for populating the outTime, duration and expected return
- */
+// #region IN/OUT STAFF TABLE
 outButton.addEventListener('click', function () {
   const rows = staffTableBody.getElementsByClassName('selectedRow');
   const rowsArray = Array.from(rows);
@@ -430,7 +86,7 @@ outButton.addEventListener('click', function () {
 
         //Marks staff as out and checks for lateness
         staffInstance.staffOut(row, outTime, expectedRTimeFormatted); //staffOut method sets the instance status property to Out and updated the HTML DOM element as well
-        staffInstance.checkLateness(); //Running the checkLateness method from our newly created instance, which initiates lateness check interval
+        // staffInstance.checkLateness(); //Running the checkLateness method from our newly created instance, which initiates lateness check interval
       }
 
       //Removes the CSS class from the row after its been handled.
@@ -459,70 +115,65 @@ inButton.addEventListener('click', function () {
   }
 });
 
-// Schedule delivery stuff
+// #endregion
 
+// #region ADD/CLEAR SCHEDULE DELIVERY/DELIVERY TABLE
 addBtn.addEventListener('click', () => {
-  const deliveryBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
+  const VEHICLE = document.getElementById('sch-vehicle');
+  const NAME = document.getElementById('sch-fname');
+  const SURNAME = document.getElementById('sch-lname');
+  const PHONE = document.getElementById('sch-phone');
+  const ADRESS = document.getElementById('sch-adress');
+  const RETURN = document.getElementById('sch-rtime');
 
   const jsUser = {
-    vehicle: document.getElementById('sch-vehicle').value,
-    name: document.getElementById('sch-fname').value,
-    surname: document.getElementById('sch-lname').value,
-    phone: document.getElementById('sch-phone').value,
-    adress: document.getElementById('sch-adress').value,
-    expectedRTime: document.getElementById('sch-rtime').value
+    vehicle: VEHICLE.value,
+    name: NAME.value,
+    surname: SURNAME.value,
+    phone: PHONE.value,
+    adress: ADRESS.value,
+    expectedRTime: RETURN.value
   };
 
-  const errorMessage = validateInputs(jsUser);
+  const errorMessage = validateInput(jsUser);
 
   if (errorMessage) {
     alert(errorMessage);
-    return; //Do not continue the rest of the code block once message has been shown to the user
+    return; //This return stops the code block right here once message has been shown to the user
   }
 
-  const deliveryID = jsUser.name + '.' + jsUser.surname
+  const mapKey = jsUser.name + '.' + jsUser.surname;
 
-  if(!deliveryMap.has(deliveryID)) {
-    const deliveryMember = new Delivery(jsUser);
-    const newRow = document.createElement('tr');
+  if (!deliveryMap.has(mapKey)) {
+    const newDelivery = new Delivery(jsUser);
 
-    //Populate delivery board table
-    newRow.innerHTML = `
-    <td>${deliveryMember.vehicle}</td>
-    <td>${deliveryMember.name}</td>
-    <td>${deliveryMember.surname}</td>
-    <td>${deliveryMember.phone}</td>
-    <td>${deliveryMember.adress}</td>
-    <td>${deliveryMember.expectedRTime}</td>
-    `;
+    deliveryMap.set(mapKey, newDelivery);
 
-    deliveryBody.appendChild(newRow);
-    deliveryMap.set(deliveryID, deliveryMember);
-    
-    deliveryMember.checkLateness();
-    deliveryRowSelection(); //Enables the selection of rows in delivery board
+    populateRow(deliveryTableBody, newDelivery, 'deliveryRow');
+
+    newDelivery.checkLateness();
+    enableRowSelection(deliveryTableBody, 'deliveryRow');
   } else {
-    alert('This user has already been added to the Delivery Board')
+    alert('This user has already been added to the Delivery Board');
   }
-  
 });
 
-//Clears only one row
-//And also clicking the clear button does nothing else but remove the row
-//Maybe we should cancel the checkLateneess method when clicking clear?
 clearBtn.addEventListener('click', () => {
   const rows = document.getElementsByClassName('selectedRow');
 
   const rowsArray = Array.from(rows);
-  
-  if(rowsArray.length > 0) {
+
+  if (rowsArray.length > 0) {
     for (let i = 0; i < rowsArray.length; i++) {
-      const row = rowsArray[i]
+      const row = rowsArray[i];
+      const mapKey = getRowId(row);
+      console.log(deliveryMap);
+
+      deliveryMap.delete(mapKey);
+
       row.remove();
-      console.log(`${row} was removed`)
     }
   }
-
-  //If we delete an item from map, will it get rid of the instance and its method? 
-  //Map.delete(deliveryId)
 });
+
+// #endregion
