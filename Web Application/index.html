@@ -22,8 +22,26 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+
+    <!-- Leaflet Map -->
+    <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  
   </head>
   <body">
+  
     <div class="container">
       <!-- Navbar -->
        <div class="navbar">
@@ -54,7 +72,7 @@
       <!-- Logo and Header -->
       <div class="header">
         <img src="../Company logo.png" alt="company-logo" />
-
+        
         <h1>Reception Management Dashboard</h1>
       </div>
 
@@ -101,6 +119,7 @@
           <tbody>
             <tr>
               <td>
+                
                 <select id="sch-vehicle" name="vehicle">
                   <option value="Car">Car</option>
                   <option value="Motorcycle">Motorcycle</option>
@@ -139,6 +158,10 @@
 
         <div class="table-buttons">
           <button id="btn-add" class="btn-confirm">Add</button>
+        </div>
+
+        <div id="map" style="display: none;">
+
         </div>
 
         <!-- Delivery Table -->

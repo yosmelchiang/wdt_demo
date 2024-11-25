@@ -10,6 +10,17 @@ body {
     we are also applying company rules on font and font color.
 }
 */
+
+#map { 
+  display: flex;
+  justify-items: center;
+  align-self: center;
+  border: 5px solid green;
+  height: 400px; 
+  width: 100vh;
+  position: relative;
+}
+
 body {
   margin: 0;
   box-sizing: border-box;

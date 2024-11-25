@@ -11,6 +11,7 @@ import {
 import { getRowId, getUserDuration, populateRow, validateInput } from './utils/wdt_utility.js';
 import { Staff } from './classes/wdt_staff.js';
 import { Delivery } from './classes/wdt_delivery.js';
+import { fetchAdress, toggleMap } from './components/wdt_map.js';
 
 //Initializes the date and real-time display clock
 setInterval(() => {
@@ -133,8 +134,16 @@ addBtn.addEventListener('click', () => {
   const ADRESS = document.getElementById('sch-adress');
   const RETURN = document.getElementById('sch-rtime');
 
+  let vehIcon = '';
+
+  if (VEHICLE.value === 'Car') {
+    vehIcon = `<i class="fa fa-car" aria-hidden="true"></i>`;
+  } else {
+    vehIcon = `<i class="fa-solid fa-motorcycle"></i>`;
+  }
+
   const jsUser = {
-    vehicle: VEHICLE.value,
+    vehicle: vehIcon,
     name: NAME.value,
     surname: SURNAME.value,
     phone: PHONE.value,
@@ -189,5 +198,32 @@ clearBtn.addEventListener('click', () => {
     }
   }
 });
+
+// #endregion
+
+// #region EXPERIMENTAL FUNCTIONANILITY
+const btnMyLocation = document.getElementById('btn-location');
+
+btnMyLocation.addEventListener('click', () => {
+  const ADRESS = document.getElementById('sch-adress');
+
+  navigator.geolocation.getCurrentPosition((position) => {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    fetchAdress(lat, lng)
+      .then((data) => {
+        ADRESS.value = data;
+      })
+      .catch((error) => {
+        console.log('Something went wront', error);
+      });
+  });
+});
+
+//Show the map to allow the user to find the adress
+const map = document.getElementById('btn-map');
+
+map.addEventListener('click', toggleMap);
 
 // #endregion
