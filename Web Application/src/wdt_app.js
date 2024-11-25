@@ -1,5 +1,5 @@
 import { staffUserGet } from './api/wdt_api.js';
-import { enableRowSelection, formEnterKeyListener } from './wdt_event.js';
+import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
 import {
   timeStamp,
   displayDateAndTime,
