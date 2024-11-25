@@ -1,3 +1,5 @@
+const addBtn = document.getElementById('btn-add');
+
 // #region ROW SELECTION
 /**
  * @description - This function applies a specific css styling class for mouse selected rows of staff table.
@@ -24,6 +26,20 @@ export function enableRowSelection(table, type) {
         rows[i].setAttribute('deliveryRow', 'true');
       }
     }
+  }
+}
+// #endregion
+
+// #region Schedule Delivery Form Input Listener
+export function formEnterKeyListener() {
+  const formInputs = document.querySelectorAll('#schedule input');
+
+  for (let i = 0; i < formInputs.length; i++) {
+    formInputs[i].addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        addBtn.click();
+      }
+    });
   }
 }
 // #endregion

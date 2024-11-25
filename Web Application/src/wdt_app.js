@@ -1,5 +1,5 @@
 import { staffUserGet } from './api/wdt_api.js';
-import { enableRowSelection } from './wdt_event.js';
+import { enableRowSelection, formEnterKeyListener } from './wdt_event.js';
 import {
   timeStamp,
   displayDateAndTime,
@@ -12,6 +12,12 @@ import { getRowId, getUserDuration, populateRow, validateInput } from './utils/w
 import { Staff } from './classes/wdt_staff.js';
 import { Delivery } from './classes/wdt_delivery.js';
 
+//Initializes the date and real-time display clock
+setInterval(() => {
+  footer.innerText = displayDateAndTime();
+}, 1000);
+
+// #region DOM Elements
 // DOM Elements
 const staffTable = document.getElementById('staff'); //Main table of staff members
 const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff table body
@@ -25,11 +31,7 @@ const addBtn = document.getElementById('btn-add');
 const clearBtn = document.getElementById('btn-clear');
 
 const footer = document.getElementById('dateAndTime');
-
-//Initializes the date and real-time display clock
-setInterval(() => {
-  footer.innerText = displayDateAndTime();
-}, 1000);
+// #endregion
 
 //These maps are used for individual instances, which will allow access to the instance properties and methods.
 export const staffMap = new Map();
@@ -118,6 +120,11 @@ inButton.addEventListener('click', function () {
 // #endregion
 
 // #region ADD/CLEAR SCHEDULE DELIVERY/DELIVERY TABLE
+
+// This function will allow the ENTER key to submit to Delivery Board
+// Only when form inputs are selected
+formEnterKeyListener();
+
 addBtn.addEventListener('click', () => {
   const VEHICLE = document.getElementById('sch-vehicle');
   const NAME = document.getElementById('sch-fname');
@@ -153,6 +160,13 @@ addBtn.addEventListener('click', () => {
 
     newDelivery.checkLateness();
     enableRowSelection(deliveryTableBody, 'deliveryRow');
+
+    //Clear the table values
+    NAME.value = '';
+    SURNAME.value = '';
+    PHONE.value = '';
+    ADRESS.value = '';
+    RETURN.value = '';
   } else {
     alert('This user has already been added to the Delivery Board');
   }
