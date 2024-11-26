@@ -9,13 +9,13 @@ const addBtn = document.getElementById('btn-add');
 export function enableRowSelection(table, type) {
   const rows = table.getElementsByTagName('tr');
 
-  if (type === 'staffRow') {
+  if (type === 'staff') {
     for (let i = 0; i < rows.length; i++) {
       rows[i].addEventListener('click', function () {
         this.classList.toggle('selectedRow');
       });
     }
-  } else if (type === 'deliveryRow') {
+  } else if (type === 'delivery') {
     for (let i = 0; i < rows.length; i++) {
       const delivery = rows[i].hasAttribute('deliveryRow');
 

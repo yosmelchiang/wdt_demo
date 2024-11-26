@@ -1,7 +1,5 @@
 // #region Duration Input Validation
 
-import { convertHoursToMinutes, currentTimeInMinutes } from './wdt_time.js';
-
 /** INPUT VALIDATOR
  * @description - Validates the user input for duration.
  *              - We are looking to validate empty input, non numeric values and negative numbers
@@ -31,14 +29,14 @@ export function getUserDuration() {
 
 // #region DOM Table Row population
 /** ROW POPULATION: Staff and Delivery table
- * @description - This function will populate the DOM table with the fetched user from api
- * @param {DOM element} table - Receives a DOM element, usually a table body
- * @param {Class} instance - Receives a class object and its properties
+ * @description - This function will populate the DOM with the class instance
+ * @param {DOM} element - DOM element, usually a table body
+ * @param {Class} instance - Class object and its properties
  */
 export function populateRow(table, instance, type) {
   const row = document.createElement('tr');
 
-  if (type === 'staffRow') {
+  if (type === 'staff') {
     row.innerHTML = `
     <td><img src="${instance.picture}" alt="Staff Picture"></td>
     <td>${instance.name}</td>
@@ -49,7 +47,7 @@ export function populateRow(table, instance, type) {
     <td>${instance.duration}</td>
     <td>${instance.expectedRTime}</td>
     `;
-  } else if (type === 'deliveryRow') {
+  } else if (type === 'delivery') {
     row.innerHTML = `
     <td>${instance.vehicle}</td>
     <td>${instance.name}</td>

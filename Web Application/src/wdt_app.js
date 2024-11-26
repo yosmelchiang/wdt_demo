@@ -1,22 +1,19 @@
-import { staffUserGet, fetchAdress } from './api/wdt_api.js';
+import { staffUserGet } from './api/wdt_api.js';
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
-import {
-  timeStamp,
-  digitalClock,
-  currentTimeInMinutes,
-  convertMinutesToHours,
-  returnTimeFormat,
-  createReturnTimeCalculator
-} from './utils/wdt_time.js';
-import { getRowId, getUserDuration, populateRow } from './utils/wdt_utility.js';
-import { Staff } from './classes/wdt_staff.js';
-import { addDelivery, validateDelivery } from './classes/wdt_delivery.js';
+import { digitalClock } from './utils/wdt_time.js';
+import { populateRow } from './utils/wdt_utility.js';
+import { Staff, staffIn, staffOut } from './classes/wdt_staff.js';
+import { addDelivery, clearDelivery } from './classes/wdt_delivery.js';
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
+
+// #region Digital clock
 
 //Initializes the date and real-time display clock
 setInterval(() => {
-  footer.innerText = digitalClock();
+  clock.innerText = digitalClock();
 }, 1000);
+
+// #endregion
 
 // #region DOM Elements
 // DOM Elements
@@ -31,13 +28,13 @@ const deliveryTableBody = deliveryTable.getElementsByTagName('tbody')[0]; //Deli
 const addBtn = document.getElementById('btn-add');
 const clearBtn = document.getElementById('btn-clear');
 
-const footer = document.getElementById('dateAndTime');
+const clock = document.getElementById('dateAndTime');
 // #endregion
 
-// #region maps
+// #region INSTANCE MAPS
 //These maps are used for individual instances, which will allow access to the instance properties and methods.
-export const staffMap = new Map();
-export const deliveryMap = new Map();
+const staffMap = new Map();
+const deliveryMap = new Map();
 // #endregion
 
 // #region api fetch
@@ -52,10 +49,10 @@ window.addEventListener('load', () => {
           const newStaff = new Staff(mapObject);
           staffMap.set(mapKey, newStaff);
 
-          populateRow(staffTableBody, newStaff, 'staffRow');
+          populateRow(staffTableBody, newStaff, 'staff');
         }
       }
-      enableRowSelection(staffTableBody, 'staffRow');
+      enableRowSelection(staffTableBody, 'staff');
     })
     .catch((error) => {
       console.log('Something went wrong: ', error);
@@ -63,64 +60,24 @@ window.addEventListener('load', () => {
 });
 // #endregion
 
-// #region IN/OUT STAFF TABLE
+// #region STAFF IN/OUT
 outButton.addEventListener('click', function () {
-  const rows = staffTableBody.getElementsByClassName('selectedRow');
-  const rowsArray = Array.from(rows);
+  const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
+  const rows = Array.from(selectedRows);
 
-  if (rowsArray.length > 0) {
-    const userDuration = getUserDuration(); //Asks the user for duration and validates, returns time in minutes format
-
-    for (let i = 0; i < rowsArray.length; i++) {
-      const row = rowsArray[i];
-
-      const outTime = timeStamp();
-      const userDurationFormatted = convertMinutesToHours(userDuration); //Formats from minutes to hours, returns in HH:MM format.
-      const calculateReturnTime = createReturnTimeCalculator(currentTimeInMinutes());
-      const expectedRTimeFormatted = returnTimeFormat(calculateReturnTime(userDuration)); //Calculates expected Return Time, returns in HH:MM format.
-
-      const staffID = getRowId(row);
-      const staffInstance = staffMap.get(staffID);
-
-      if (staffInstance) {
-        //Updating the page with Staff instance properties for visibility
-        row.cells[5].innerHTML = outTime;
-        row.cells[6].innerHTML = userDurationFormatted;
-        row.cells[7].innerHTML = expectedRTimeFormatted;
-
-        //Marks staff as out and checks for lateness
-        staffInstance.staffOut(row, outTime, expectedRTimeFormatted); //staffOut method sets the instance status property to Out and updated the HTML DOM element as well
-      }
-
-      //Removes the CSS class from the row after its been handled.
-      row.classList.remove('selectedRow');
-    }
-  }
+  staffOut(rows, staffMap);
 });
 
 inButton.addEventListener('click', function () {
-  const rows = staffTableBody.getElementsByClassName('selectedRow');
-  const rowsArray = Array.from(rows);
+  const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
+  const rows = Array.from(selectedRows);
 
-  if (rowsArray.length > 0) {
-    for (let i = 0; i < rowsArray.length; i++) {
-      const row = rowsArray[i];
-
-      const staffID = getRowId(row);
-      const staffInstance = staffMap.get(staffID);
-
-      if (staffInstance) {
-        staffInstance.staffIn(row);
-      }
-
-      row.classList.remove('selectedRow');
-    }
-  }
+  staffIn(rows, staffMap);
 });
 
 // #endregion
 
-// #region ADD/CLEAR SCHEDULE DELIVERY/DELIVERY TABLE
+// #region DELIVERY ADD/CLEAR
 
 addBtn.addEventListener('click', () => {
   const VEHICLE = document.getElementById('sch-vehicle');
@@ -138,7 +95,7 @@ addBtn.addEventListener('click', () => {
     vehIcon = `<i class="fa-solid fa-motorcycle"></i>`;
   }
 
-  const jsUser = {
+  const inputs = {
     vehicle: vehIcon,
     name: NAME.value,
     surname: SURNAME.value,
@@ -147,53 +104,25 @@ addBtn.addEventListener('click', () => {
     expectedRTime: RETURN.value
   };
 
-  const errorMessage = validateDelivery(jsUser);
+  const newDelivery = addDelivery(inputs, deliveryMap);
 
-  if (errorMessage) {
-    alert(errorMessage);
-    return; //This return stops the rest of the code block once message has been shown to the user
-  }
+  //Clear the table values
+  NAME.value = '';
+  SURNAME.value = '';
+  PHONE.value = '';
+  ADRESS.value = '';
+  RETURN.value = '';
 
-  const mapKey = jsUser.name + '.' + jsUser.surname;
-
-  if (!deliveryMap.has(mapKey)) {
-    const newDelivery = addDelivery(jsUser);
-
-    deliveryMap.set(mapKey, newDelivery);
-
-    populateRow(deliveryTableBody, newDelivery, 'deliveryRow');
-    enableRowSelection(deliveryTableBody, 'deliveryRow');
-
-    //Clear the table values
-    NAME.value = '';
-    SURNAME.value = '';
-    PHONE.value = '';
-    ADRESS.value = '';
-    RETURN.value = '';
-  } else {
-    alert('This user has already been added to the Delivery Board');
-  }
+  populateRow(deliveryTableBody, newDelivery, 'delivery');
+  enableRowSelection(deliveryTableBody, 'delivery');
 });
 
 clearBtn.addEventListener('click', () => {
-  const rows = document.getElementsByClassName('selectedRow');
+  const selectedRow = deliveryTableBody.getElementsByClassName('selectedRow');
 
-  const rowsArray = Array.from(rows);
+  const rows = Array.from(selectedRow);
 
-  if (rowsArray.length > 0) {
-    for (let i = 0; i < rowsArray.length; i++) {
-      const row = rowsArray[i];
-      const mapKey = getRowId(row);
-
-      let warningMsg = `
-      Are you sure you want to clear ${mapKey.replace('.', ' ')} from the board?
-      `;
-      if (confirm(warningMsg) == true) {
-        deliveryMap.delete(mapKey);
-        row.remove();
-      }
-    }
-  }
+  clearDelivery(rows, deliveryMap);
 });
 
 // This function will allow the ENTER key to submit to Delivery Board
@@ -201,7 +130,7 @@ clearBtn.addEventListener('click', () => {
 formEnterKeyListener();
 
 // #endregion
-it 
+
 // #region EXTRA FEATURES
 const toggle = true; //Set to true to enable extra features
 
