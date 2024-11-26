@@ -11,7 +11,7 @@ import {
 import { getRowId, getUserDuration, populateRow } from './utils/wdt_utility.js';
 import { Staff } from './classes/wdt_staff.js';
 import { addDelivery, validateDelivery } from './classes/wdt_delivery.js';
-import { toggleMap } from './components/wdt_map.js';
+import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
 
 //Initializes the date and real-time display clock
 setInterval(() => {
@@ -122,7 +122,6 @@ inButton.addEventListener('click', function () {
 
 // #region ADD/CLEAR SCHEDULE DELIVERY/DELIVERY TABLE
 
-
 addBtn.addEventListener('click', () => {
   const VEHICLE = document.getElementById('sch-vehicle');
   const NAME = document.getElementById('sch-fname');
@@ -130,15 +129,15 @@ addBtn.addEventListener('click', () => {
   const PHONE = document.getElementById('sch-phone');
   const ADRESS = document.getElementById('sch-adress');
   const RETURN = document.getElementById('sch-rtime');
-  
+
   let vehIcon = '';
-  
+
   if (VEHICLE.value === 'Car') {
     vehIcon = `<i class="fa fa-car" aria-hidden="true"></i>`;
   } else {
     vehIcon = `<i class="fa-solid fa-motorcycle"></i>`;
   }
-  
+
   const jsUser = {
     vehicle: vehIcon,
     name: NAME.value,
@@ -147,21 +146,21 @@ addBtn.addEventListener('click', () => {
     adress: ADRESS.value,
     expectedRTime: RETURN.value
   };
-  
+
   const errorMessage = validateDelivery(jsUser);
-  
+
   if (errorMessage) {
     alert(errorMessage);
     return; //This return stops the rest of the code block once message has been shown to the user
   }
-  
+
   const mapKey = jsUser.name + '.' + jsUser.surname;
-  
+
   if (!deliveryMap.has(mapKey)) {
-    const newDelivery = addDelivery(jsUser)
-    
+    const newDelivery = addDelivery(jsUser);
+
     deliveryMap.set(mapKey, newDelivery);
-    
+
     populateRow(deliveryTableBody, newDelivery, 'deliveryRow');
     enableRowSelection(deliveryTableBody, 'deliveryRow');
 
@@ -178,20 +177,18 @@ addBtn.addEventListener('click', () => {
 
 clearBtn.addEventListener('click', () => {
   const rows = document.getElementsByClassName('selectedRow');
-  
+
   const rowsArray = Array.from(rows);
-  
+
   if (rowsArray.length > 0) {
-    
     for (let i = 0; i < rowsArray.length; i++) {
-      
       const row = rowsArray[i];
       const mapKey = getRowId(row);
 
       let warningMsg = `
       Are you sure you want to clear ${mapKey.replace('.', ' ')} from the board?
-      `
-      if(confirm(warningMsg) == true) {
+      `;
+      if (confirm(warningMsg) == true) {
         deliveryMap.delete(mapKey);
         row.remove();
       }
@@ -204,30 +201,15 @@ clearBtn.addEventListener('click', () => {
 formEnterKeyListener();
 
 // #endregion
+it 
+// #region EXTRA FEATURES
+const toggle = true; //Set to true to enable extra features
 
-// #region EXPERIMENTAL FUNCTIONANILITY
-const btnMyLocation = document.getElementById('btn-location');
-
-btnMyLocation.addEventListener('click', () => {
-  const adressInput = document.getElementById('sch-adress');
-
-  navigator.geolocation.getCurrentPosition((position) => {
-    const lat = position.coords.latitude;
-    const lng = position.coords.longitude;
-
-    fetchAdress(lat, lng)
-      .then((data) => {
-        adressInput.value = data;
-      })
-      .catch((error) => {
-        console.log('Something went wront', error);
-      });
-  });
-});
-
-//Show the map to allow the user to find the adress
-const map = document.getElementById('btn-map');
-
-map.addEventListener('click', toggleMap);
+if (toggle) {
+  enableMapFeatures();
+  getLocation(); //Gets the current user location
+  showPopover(); //Shows a little popover when focusing the adress input
+  showMap(); //Allows the user to use the map to find an adress
+}
 
 // #endregion
