@@ -64,14 +64,15 @@ export function toggleMap() {
 
     marker.openPopup();
 
-    //Waits a second, to ensure DOM is updates
+    //Waits a second, to ensure DOM is updated.
     setTimeout(() => {
       const useAdressBtn = document.getElementById('use-address');
 
       if (useAdressBtn) {
         useAdressBtn.addEventListener('click', () => {
-          adressInput.value = adress;
           toggleMap();
+          adressInput.value = adress;
+          document.getElementById('sch-rtime').focus(); //Sets focus on return time.
         });
       }
     }, 1000);
