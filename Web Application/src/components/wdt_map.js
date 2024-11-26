@@ -1,6 +1,7 @@
 let mapInstance = null;
 
 export function toggleMap() {
+  const adressInput = document.getElementById('sch-adress');
   const mapDiv = document.getElementById('map');
 
   if (mapDiv.style.display === 'flex') {
@@ -45,7 +46,6 @@ export function toggleMap() {
 
     //Waits a second, to ensure DOM is updates
     setTimeout(() => {
-      const adressInput = document.getElementById('sch-adress');
       const useAdressBtn = document.getElementById('use-address');
 
       if (useAdressBtn) {
@@ -56,16 +56,4 @@ export function toggleMap() {
       }
     }, 1000);
   });
-}
-
-export function fetchAdress(lat, lng) {
-  return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-    .then((response) => response.json())
-    .then((data) => {
-      const string = `${data.address.road} ${data.address.house_number}, ${data.address.postcode} ${data.address.city}, ${data.address.country}`;
-      return string;
-    })
-    .catch((error) => {
-      console.log('Something went wrong', error);
-    });
 }

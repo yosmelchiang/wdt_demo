@@ -22,35 +22,20 @@ export function staffUserGet() {
           surname: lName,
           email: email
         };
-
-        ///#region Some old code, need this for
-        //   const staffID = jsUser.name + '.' + jsUser.surname; //We are creating an ID based on the user's first name and surname for our map
-
-        //   //If the staff is not already in the map, create an instance and popuate the table
-        //   if (!staffMap.has(staffID)) {
-        //     const staffMember = new Staff(jsUser); //Represents a single instance of the Staff class
-        //     const newRow = document.createElement('tr');
-
-        //     //Populate the DOM table with user data from our Staff instance.
-        //     newRow.innerHTML = `
-        //     <td><img src="${staffMember.picture}" alt="Staff Picture"></td>
-        //     <td>${staffMember.name}</td>
-        //     <td>${staffMember.surname}</td>
-        //     <td>${staffMember.email}</td>
-        //     <td>${staffMember.status}</td>
-        //     <td>${staffMember.outTime}</td>
-        //     <td>${staffMember.duration}</td>
-        //     <td>${staffMember.expectedRTime}</td>
-        //     `;
-        //     staffTableBody.appendChild(newRow);
-
-        //     staffMap.set(staffID, staffMember); //We are storing this instance in our map so we can use it outside of the promise
-        //   } else {
-        //     console.log('Something went wrong');
-        //   }
-        ///#endregion
       }
       return users;
     })
     .catch((error) => console.log('Error fetching users: ', error));
+}
+
+export function fetchAdress(lat, lng) {
+  return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+    .then((response) => response.json())
+    .then((data) => {
+      const string = `${data.address.road} ${data.address.house_number}, ${data.address.postcode} ${data.address.city}, ${data.address.country}`;
+      return string;
+    })
+    .catch((error) => {
+      console.log('Something went wrong', error);
+    });
 }

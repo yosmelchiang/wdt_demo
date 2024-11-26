@@ -4,7 +4,7 @@ export function createToast(type, toastData) {
 
   if (type === 'staff') {
     toast.innerHTML = `
-    <div id="${toastData.id}" class="toast text-bg-danger border-0 p-3 mb-3" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="${toastData.id}" class="toast text-bg-danger border-0 p-3 mb-3 role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
         <div class="toast-header text-bg-danger border-0">
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -17,7 +17,7 @@ export function createToast(type, toastData) {
     `;
   } else if (type === 'delivery') {
     toast.innerHTML = `
-    <div id="${toastData.id}" class="toast text-bg-danger border-0 p-3 mb-3" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="${toastData.id}" class="toast text-bg-danger border-0 p-3 mb-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
     <div class="toast-header text-bg-danger border-0">
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>

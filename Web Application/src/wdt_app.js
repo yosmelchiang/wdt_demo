@@ -1,4 +1,4 @@
-import { staffUserGet } from './api/wdt_api.js';
+import { staffUserGet, fetchAdress } from './api/wdt_api.js';
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
 import {
   timeStamp,
@@ -8,10 +8,10 @@ import {
   returnTimeFormat,
   createReturnTimeCalculator
 } from './utils/wdt_time.js';
-import { getRowId, getUserDuration, populateRow, validateInput } from './utils/wdt_utility.js';
+import { getRowId, getUserDuration, populateRow } from './utils/wdt_utility.js';
 import { Staff } from './classes/wdt_staff.js';
-import { Delivery } from './classes/wdt_delivery.js';
-import { fetchAdress, toggleMap } from './components/wdt_map.js';
+import { addDelivery, validateDelivery } from './classes/wdt_delivery.js';
+import { toggleMap } from './components/wdt_map.js';
 
 //Initializes the date and real-time display clock
 setInterval(() => {
@@ -34,11 +34,13 @@ const clearBtn = document.getElementById('btn-clear');
 const footer = document.getElementById('dateAndTime');
 // #endregion
 
+// #region maps
 //These maps are used for individual instances, which will allow access to the instance properties and methods.
 export const staffMap = new Map();
 export const deliveryMap = new Map();
+// #endregion
 
-// #region api fetching
+// #region api fetch
 window.addEventListener('load', () => {
   staffUserGet()
     .then((users) => {
@@ -59,7 +61,6 @@ window.addEventListener('load', () => {
       console.log('Something went wrong: ', error);
     });
 });
-
 // #endregion
 
 // #region IN/OUT STAFF TABLE
@@ -121,9 +122,6 @@ inButton.addEventListener('click', function () {
 
 // #region ADD/CLEAR SCHEDULE DELIVERY/DELIVERY TABLE
 
-// This function will allow the ENTER key to submit to Delivery Board
-// Only when form inputs are selected
-formEnterKeyListener();
 
 addBtn.addEventListener('click', () => {
   const VEHICLE = document.getElementById('sch-vehicle');
@@ -132,15 +130,15 @@ addBtn.addEventListener('click', () => {
   const PHONE = document.getElementById('sch-phone');
   const ADRESS = document.getElementById('sch-adress');
   const RETURN = document.getElementById('sch-rtime');
-
+  
   let vehIcon = '';
-
+  
   if (VEHICLE.value === 'Car') {
     vehIcon = `<i class="fa fa-car" aria-hidden="true"></i>`;
   } else {
     vehIcon = `<i class="fa-solid fa-motorcycle"></i>`;
   }
-
+  
   const jsUser = {
     vehicle: vehIcon,
     name: NAME.value,
@@ -149,24 +147,22 @@ addBtn.addEventListener('click', () => {
     adress: ADRESS.value,
     expectedRTime: RETURN.value
   };
-
-  const errorMessage = validateInput(jsUser);
-
+  
+  const errorMessage = validateDelivery(jsUser);
+  
   if (errorMessage) {
     alert(errorMessage);
-    return; //This return stops the code block right here once message has been shown to the user
+    return; //This return stops the rest of the code block once message has been shown to the user
   }
-
+  
   const mapKey = jsUser.name + '.' + jsUser.surname;
-
+  
   if (!deliveryMap.has(mapKey)) {
-    const newDelivery = new Delivery(jsUser);
-
+    const newDelivery = addDelivery(jsUser)
+    
     deliveryMap.set(mapKey, newDelivery);
-
+    
     populateRow(deliveryTableBody, newDelivery, 'deliveryRow');
-
-    newDelivery.deliveryDriverIsLate();
     enableRowSelection(deliveryTableBody, 'deliveryRow');
 
     //Clear the table values
@@ -182,21 +178,30 @@ addBtn.addEventListener('click', () => {
 
 clearBtn.addEventListener('click', () => {
   const rows = document.getElementsByClassName('selectedRow');
-
+  
   const rowsArray = Array.from(rows);
-
+  
   if (rowsArray.length > 0) {
+    
     for (let i = 0; i < rowsArray.length; i++) {
+      
       const row = rowsArray[i];
       const mapKey = getRowId(row);
-      console.log(deliveryMap);
 
-      deliveryMap.delete(mapKey);
-
-      row.remove();
+      let warningMsg = `
+      Are you sure you want to clear ${mapKey.replace('.', ' ')} from the board?
+      `
+      if(confirm(warningMsg) == true) {
+        deliveryMap.delete(mapKey);
+        row.remove();
+      }
     }
   }
 });
+
+// This function will allow the ENTER key to submit to Delivery Board
+// Only when form inputs are selected
+formEnterKeyListener();
 
 // #endregion
 

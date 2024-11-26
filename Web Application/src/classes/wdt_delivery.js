@@ -7,8 +7,6 @@ import {
 } from '../utils/wdt_time.js';
 import { createToast } from '../components/wdt_toast.js';
 
-const toastContainer = document.getElementsByClassName('toast-container')[0];
-
 export class Delivery extends Employee {
   constructor(JSObject) {
     super(JSObject.name, JSObject.surname); //Inherit name and surname from Employee
@@ -43,4 +41,36 @@ export class Delivery extends Employee {
     }, 6000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
+}
+
+export function addDelivery(jsUser) {  
+  const newDelivery = new Delivery(jsUser);
+  newDelivery.deliveryDriverIsLate();
+  return newDelivery;
+}
+
+export function validateDelivery(jsUser) {
+  let errorMessage = '';
+
+  const invalidName = jsUser.name.trim() === '' || !isNaN(jsUser.name);
+  const invalidSurname = jsUser.surname.trim() === '' || !isNaN(jsUser.surname);
+  const invalidPhone = jsUser.phone.trim() === ''; //We dont need to validate if its a number as the HTML input type (Number) validates this for us
+  const invalidAdress = jsUser.adress.trim() === '';
+  const invalidReturnTime =
+    jsUser.expectedRTime.trim() === '' ||
+    convertHoursToMinutes(jsUser.expectedRTime) < currentTimeInMinutes();
+
+  if (invalidName) {
+    errorMessage = 'Name cannot be a number or empty.';
+  } else if (invalidSurname) {
+    errorMessage = 'Surname cannot be a number or empty.';
+  } else if (invalidPhone) {
+    errorMessage = 'Phone cannot be empty.';
+  } else if (invalidAdress) {
+    errorMessage = 'Adress cannot be empty';
+  } else if (invalidReturnTime) {
+    errorMessage = 'Return time cannot back in time or empty';
+  }
+
+  return errorMessage;
 }

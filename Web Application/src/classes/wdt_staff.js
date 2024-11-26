@@ -54,7 +54,7 @@ export class Staff extends Employee {
     };
 
     const checkIfLate = setInterval(() => {
-      if (staffMap.has(toastData.id)) {
+      if (staffMap.has(toastData.id) && this.status === 'Out') {
         if (convertHoursToMinutes(this.expectedRTime) < currentTimeInMinutes()) {
           createToast('staff', toastData);
           clearInterval(checkIfLate);

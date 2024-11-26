@@ -15,7 +15,6 @@ body {
   display: flex;
   justify-items: center;
   align-self: center;
-  border: 5px solid green;
   height: 400px; 
   width: 100vh;
   position: relative;

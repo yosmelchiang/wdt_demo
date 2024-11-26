@@ -29,39 +29,6 @@ export function getUserDuration() {
 }
 // #endregion
 
-// #region Schedule Delivery Input Validation
-/**
- *
- * @param {Object} JSObject
- * @returns {String} - An errorMessage that will pop up on the browser as an alert
- */
-export function validateInput(JSObject) {
-  let errorMessage = '';
-
-  const invalidName = JSObject.name.trim() === '' || !isNaN(JSObject.name);
-  const invalidSurname = JSObject.surname.trim() === '' || !isNaN(JSObject.surname);
-  const invalidPhone = JSObject.phone.trim() === ''; //We dont need to validate if its a number as the HTML input type (Number) validates this for us
-  const invalidAdress = JSObject.adress.trim() === '';
-  const invalidReturnTime =
-    JSObject.expectedRTime.trim() === '' ||
-    convertHoursToMinutes(JSObject.expectedRTime) < currentTimeInMinutes();
-
-  if (invalidName) {
-    errorMessage = 'Name cannot be a number or empty.';
-  } else if (invalidSurname) {
-    errorMessage = 'Surname cannot be a number or empty.';
-  } else if (invalidPhone) {
-    errorMessage = 'Phone cannot be empty.';
-  } else if (invalidAdress) {
-    errorMessage = 'Adress cannot be empty';
-  } else if (invalidReturnTime) {
-    errorMessage = 'Return time cannot back in time or empty';
-  }
-
-  return errorMessage;
-}
-// #endregion Validation
-
 // #region DOM Table Row population
 /** ROW POPULATION: Staff and Delivery table
  * @description - This function will populate the DOM table with the fetched user from api
