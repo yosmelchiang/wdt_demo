@@ -2,7 +2,7 @@ import { staffUserGet } from './api/wdt_api.js';
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
 import { digitalClock } from './utils/wdt_time.js';
 import { populateRow } from './utils/wdt_utility.js';
-import { Staff, staffIn, staffOut } from './classes/wdt_staff.js';
+import { staffIn, staffOut } from './classes/wdt_staff.js';
 import { addDelivery, clearDelivery } from './classes/wdt_delivery.js';
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
 
@@ -37,20 +37,12 @@ const staffMap = new Map();
 const deliveryMap = new Map();
 // #endregion
 
-// #region api fetch
+// #region GET USERS FROM API
 window.addEventListener('load', () => {
-  staffUserGet()
-    .then((users) => {
-      for (const user in users) {
-        const mapKey = user;
-        const mapObject = users[user];
-
-        if (!staffMap.has(mapKey)) {
-          const newStaff = new Staff(mapObject);
-          staffMap.set(mapKey, newStaff);
-
-          populateRow(staffTableBody, newStaff, 'staff');
-        }
+  staffUserGet(staffMap) //Here we are passing our empty map, which will be filled by the api calls
+    .then((newStaff) => {
+      for (const [staffID, staffMember] of newStaff) { //Destructuring the staff map(key:value pair), here we are only using the value of each key to populate the rows
+          populateRow(staffTableBody, staffMember, 'staff');
       }
       enableRowSelection(staffTableBody, 'staff');
     })

@@ -18,6 +18,7 @@ export function invalidDuration(input) {
 export function getUserDuration() {
   while (true) {
     const userInput = prompt('How long are you going to be gone for?');
+
     if (!invalidDuration(userInput)) {
       return parseInt(userInput);
     } else {

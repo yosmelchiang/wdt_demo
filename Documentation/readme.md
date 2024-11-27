@@ -52,8 +52,6 @@ Finisher Phase (duration 1 week)
         -  Core table and buttons
         -  Navbar animation
         -  Applied company logo and styling rules
-            ![alt text](image.png)
-            ![alt text](image-1.png)
     -  Main JS: app.js
 -  External
     -  Styling

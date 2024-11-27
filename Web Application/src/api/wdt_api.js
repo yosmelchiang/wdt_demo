@@ -1,29 +1,29 @@
-export function staffUserGet() {
-  let users = {};
+import { Staff } from '../classes/wdt_staff.js';
 
+export function staffUserGet(staffMap) {
   return fetch('https://randomuser.me/api/?results=5&seed=wdt')
     .then((response) => response.json())
     .then((data) => {
-      const apiUserData = data.results;
+      const users = data.results;
 
-      for (let i = 0; i < apiUserData.length; i++) {
-        const picture = apiUserData[i].picture.medium;
-        const fName = apiUserData[i].name.first;
-        const lName = apiUserData[i].name.last;
-        const email = apiUserData[i].email;
-
-        //Creating a key for our users object based on firstname and lastname
-        const key = `${fName}.${lName}`;
-
-        //We are parsing the JSON data into an object, where we only want picture, name, surname and email.
-        users[key] = {
-          picture: picture,
-          name: fName,
-          surname: lName,
-          email: email
+      for (let i = 0; i < users.length; i++) {
+        const jsObject = { //Creating an Object for each fetched user of our API call
+          picture: users[i].picture.medium,
+          name: users[i].name.first,
+          surname: users[i].name.last,
+          email: users[i].email
         };
+
+        // Creating a staffID for the staffMap key
+        const staffID = `${jsObject.name}.${jsObject.surname}`;
+
+        if (!staffMap.has(staffID)) { // Create a new Staff instance only if the ID doesn't already exists in our map
+          const newStaff = new Staff(jsObject);
+
+          staffMap.set(staffID, newStaff);
+        }
       }
-      return users;
+      return staffMap; // Return the updated staffMap
     })
     .catch((error) => console.log('Error fetching users: ', error));
 }
