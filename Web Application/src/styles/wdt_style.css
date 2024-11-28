@@ -181,7 +181,9 @@ table buttons {
   color: #fff;
   background-color: #198754;
   font-family: 'Consolas', monospace;
-  font-size: 30px;
+  font-size: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
   transition: all 0.5s;
 }
 
@@ -214,7 +216,9 @@ table buttons {
   color: #fff;
   background-color: #dc3545;
   font-family: 'Consolas', monospace;
-  font-size: 30px;
+  font-size: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
   transition: all 0.5s;
 }
 

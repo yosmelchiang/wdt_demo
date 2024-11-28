@@ -78,22 +78,26 @@ window.addEventListener('load', () => {
 // #region STAFF IN/OUT
 outButton.addEventListener('click', function () {
   const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
-  const rows = Array.from(selectedRows);
-
-  staffOut(rows, staffMap);
+  if (selectedRows.length > 0) {
+    const rows = Array.from(selectedRows);
+    staffOut(rows, staffMap);
+    return;
+  }
+  alert("You haven't selected any rows, please select one or more  rows and try again.");
 });
 
 inButton.addEventListener('click', function () {
   const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
-  const rows = Array.from(selectedRows);
-
-  staffIn(rows, staffMap);
+  if (selectedRows.length > 0) {
+    const rows = Array.from(selectedRows);
+    staffIn(rows, staffMap);
+    return;
+  }
+  alert("You haven't selected any rows, please select one or more rows and try again.");
 });
-
 // #endregion
 
-// #region DELIVERY ADD/CLEAR
-
+// #region DELIVERIES ADD/CLEAR
 addBtn.addEventListener('click', () => {
   const VEHICLE = document.getElementById('sch-vehicle');
   const NAME = document.getElementById('sch-fname');
@@ -139,7 +143,4 @@ clearBtn.addEventListener('click', () => {
 
   clearDelivery(rows, deliveryMap);
 });
-
-
-
 // #endregion

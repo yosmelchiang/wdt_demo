@@ -199,7 +199,7 @@ This sprint is categorized in the following focus areas:
 
   - Issues
 
-  10. Design and style toast notifications (popup, close button and text elements).
+  10. ![alt text](epics.png) Design and style toast notifications (popup, close button and text elements).
 
   - Our HTML page hosts a single toast container, for the purpose of being able to stack toasts on top of eachother (this is bootstrap functionality).
   - The `createToast` function takes two parameters: a `type`, and `toastData`.
@@ -220,10 +220,13 @@ This sprint is categorized in the following focus areas:
         - `Adress` - The adress of the delivery driver.
         - `Message` - The message created by the `deliveryDriverIsLate` method, which contains a string and how much time they are late by.
 
-  11. Implement the `createToast` function.
+  11. ![alt text](tasks.png) Implement the `createToast` function.
   - The `createToast` is going to be called from each instances methods: `staffMemberIsLate` for the staff or `deliveryDriverIsLate` for the deliveries.
   - When the `createToast` function is called, we are creating a new div and appending this to our toast container on the DOM.
-  12. Add hover animations for dashboard buttons (e.g., In/Out)
-  - We are applying CSS hover animation on In/Out buttons,
+  12. ![alt text](tasks.png) Add hover animations for dashboard buttons (e.g., In/Out)
+  - We are applying CSS hover animation on all buttons. The hover animation will differ somewhat on what type of button the user is interacting with. Currently we have two categories: `confirm` and `cancel` buttons.
+    - `Confirm`: Consists of the `In` button on the `Staff` table and the `Add` on the `Deliveries`
+    - `Cancel`: Consists of the `Out` button on the `Staff` table and the `Clear` on the `Deliveries`
+    - The main difference of these two button types are the company branding styles and the hovering animations show visually for each of the type.
 
 # Reflection Report
