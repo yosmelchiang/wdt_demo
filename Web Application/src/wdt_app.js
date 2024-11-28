@@ -1,11 +1,13 @@
 import { staffUserGet } from './api/wdt_api.js';
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
-import { populateRow, digitalClock } from './utils/wdt_utility.js';
+import { populateRow } from './utils/wdt_utility.js';
 import { staffIn, staffOut } from './classes/wdt_staff.js';
 import { addDelivery, clearDelivery } from './classes/wdt_delivery.js';
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
+import { Time } from './classes/wdt_time.js';
 
 // #region DOM Elements
+
 // DOM Elements
 const staffTable = document.getElementById('staff'); //Main table of staff members
 const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff table body
@@ -19,16 +21,19 @@ const addBtn = document.getElementById('btn-add');
 const clearBtn = document.getElementById('btn-clear');
 
 const clock = document.getElementById('dateAndTime');
+
+const formInputs = document.querySelectorAll('#schedule input');
 // #endregion
 
 // #region EXTRA FEATURES
 const toggle = true; //Set to true to enable extra features
 
 if (toggle) {
-  enableMapFeatures();
+  enableMapFeatures(); //This function simply hides/shows current location and map icons from the DOM
   getLocation(); //Gets the current user location
   showPopover(); //Shows a little popover when focusing the adress input
   showMap(); //Allows the user to use the map to find an adress
+  formEnterKeyListener(formInputs, addBtn); // This function will allow the ENTER key to submit to Delivery Board
 }
 // #endregion
 
@@ -37,9 +42,9 @@ if (toggle) {
 //Initializes the date and real-time display clock
 
 setInterval(() => {
-  clock.innerText = digitalClock();
+  const digitalClock = new Time(new Date());
+  clock.innerText = digitalClock.displayDateAndTime();
 }, 1000);
-
 
 // #endregion
 
@@ -135,8 +140,6 @@ clearBtn.addEventListener('click', () => {
   clearDelivery(rows, deliveryMap);
 });
 
-// This function will allow the ENTER key to submit to Delivery Board
-// Only when form inputs are selected
-formEnterKeyListener();
+
 
 // #endregion

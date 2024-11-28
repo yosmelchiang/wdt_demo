@@ -1,5 +1,6 @@
 import { Staff } from '../classes/wdt_staff.js';
 
+// #region API Calls
 export function staffUserGet() {
   let staffs = {};
 
@@ -25,7 +26,9 @@ export function staffUserGet() {
     })
     .catch((error) => console.log('Error fetching users: ', error));
 }
+// #endregion
 
+// #region Fetch current location adress (Additional feature)
 export function fetchAdress(lat, lng) {
   return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
     .then((response) => response.json())
@@ -37,3 +40,4 @@ export function fetchAdress(lat, lng) {
       console.log('Something went wrong', error);
     });
 }
+// #endregion

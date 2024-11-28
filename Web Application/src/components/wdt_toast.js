@@ -1,5 +1,12 @@
+//Toast container where we will be creating our toasts
+const toastContainer = document.getElementsByClassName('toast-container')[0];
+
+/**
+ * @description - Creates a toast div that will be designed and appended to our toast container upon function call.
+ * @param {@description} type - A string used to choose from a staff or delivery type of toast
+ * @param {Object} toastData - An object containing essential data of our staff element
+ */
 export function createToast(type, toastData) {
-  const toastContainer = document.getElementsByClassName('toast-container')[0];
   const toast = document.createElement('div');
 
   if (type === 'staff') {
@@ -29,7 +36,7 @@ export function createToast(type, toastData) {
         <p>${toastData.message}</p>
     </div>
     </div>
-`;
+    `;
   }
   toastContainer.appendChild(toast);
 

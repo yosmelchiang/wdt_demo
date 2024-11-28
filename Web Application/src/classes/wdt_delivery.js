@@ -1,6 +1,9 @@
 import { Employee } from './wdt_employee.js';
 import { createToast } from '../components/wdt_toast.js';
-import { getRowId, timeInMinutes, hoursToMinutes, minutesToHours } from '../utils/wdt_utility.js';
+import { getRowId } from '../utils/wdt_utility.js';
+import { Time } from './wdt_time.js';
+
+// #region DELIVERY CLASS
 
 export class Delivery extends Employee {
   constructor(JSObject) {
@@ -12,21 +15,28 @@ export class Delivery extends Employee {
   }
 
   deliveryDriverIsLate(deliveryMap) {
-    const toastData = {
-      id: `${this.name}.${this.surname}`,
-      name: this.name,
-      surname: this.surname,
-      phone: this.phone,
-      adress: this.adress,
-      return: this.expectedRTime,
-      message: `Late by: ${minutesToHours(
-        timeInMinutes() - hoursToMinutes(this.expectedRTime)
-      )} mins`
-    };
-
     const checkIfLate = setInterval(() => {
-      if (deliveryMap.has(toastData.id)) {
-        if (hoursToMinutes(this.expectedRTime) < timeInMinutes()) {
+      const time = new Time(new Date());
+      const returnTime = time.convertHoursToMins(this.expectedRTime);
+      const currentTime = time.currentTimeInMins();
+      const deliveryID = `${this.name}.${this.surname}`;
+
+      if (deliveryMap.has(deliveryID)) {
+        if (returnTime < currentTime) {
+          //Calculate lateness
+          const timeLate = time.convertMinsToHours(currentTime - returnTime);
+
+          //Create toast notification data and message
+          const toastData = {
+            id: deliveryID,
+            name: this.name,
+            surname: this.surname,
+            phone: this.phone,
+            adress: this.adress,
+            return: this.expectedRTime,
+            message: `Late by: ${timeLate} mins`
+          };
+
           createToast('delivery', toastData);
           clearInterval(checkIfLate);
         }
@@ -38,15 +48,20 @@ export class Delivery extends Employee {
   }
 }
 
+// #endregion
+
+// #region VALIDATE INPUT FIELDS
 export function validateDelivery(inputs) {
   let errorMessage = '';
+  const time = new Time(new Date());
+  const inputTime = time.convertHoursToMins(inputs.expectedRTime);
+  const currentTime = time.currentTimeInMins();
 
   const invalidName = inputs.name.trim() === '' || !isNaN(inputs.name);
   const invalidSurname = inputs.surname.trim() === '' || !isNaN(inputs.surname);
   const invalidPhone = inputs.phone.trim() === ''; //We dont need to validate if its a number as the HTML input type (Number) validates this for us
   const invalidAdress = inputs.adress.trim() === '';
-  const invalidReturnTime =
-    inputs.expectedRTime.trim() === '' || hoursToMinutes(inputs.expectedRTime) < timeInMinutes();
+  const invalidReturnTime = inputs.expectedRTime.trim() === '' || inputTime < currentTime;
 
   if (invalidName) {
     errorMessage = 'Name cannot be a number or empty.';
@@ -63,6 +78,9 @@ export function validateDelivery(inputs) {
   return errorMessage;
 }
 
+// #endregion
+
+// #region ADD / CLEAR DELIVERIES
 /**
  *
  * @param {Object} inputs - Object containing input values
@@ -111,3 +129,4 @@ export function clearDelivery(rows, deliveryMap) {
     }
   }
 }
+// #endregion

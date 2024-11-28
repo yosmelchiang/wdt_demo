@@ -16,13 +16,15 @@ body {
   justify-items: center;
   align-self: center;
   height: 400px; 
-  width: 100vh;
+  width: 100%;
   position: relative;
 }
 
 body {
   margin: 0;
+  padding: 0;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .container {
@@ -48,7 +50,6 @@ body {
   display: flex;
   flex-direction: row;
   font-family: 'Consolas', monospace;
-
   background-color: #0e8ea8;
   color: #212529
 }
@@ -167,22 +168,78 @@ table buttons {
 }
 
 /* Button styling */
+
 .table-buttons {
   padding: 5px;
   display: flex;
   flex-direction: row-reverse;
   justify-content: space-between;
 }
+
+/* In and Add buttons all fall under btn-confirm category */
 .btn-confirm {
   color: #fff;
   background-color: #198754;
   font-family: 'Consolas', monospace;
+  font-size: 30px;
+  transition: all 0.5s;
 }
 
+.btn-confirm span {
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.btn-confirm span:after {
+  content: '\203A';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -50px;
+  transition: 0.5s;
+}
+
+.btn-confirm:hover span {
+  padding-right: 50px;
+}
+
+.btn-confirm:hover span:after {
+  opacity: 1;
+  right: 0;
+}
+
+/* Out and Clear buttons all fall under btn-cancel category */
 .btn-cancel {
   color: #fff;
   background-color: #dc3545;
   font-family: 'Consolas', monospace;
+  font-size: 30px;
+  transition: all 0.5s;
+}
+
+.btn-cancel span {
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.btn-cancel span:after {
+  content: '\2039';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  left: -50px;
+  transition: 0.5s;
+}
+
+.btn-cancel:hover span {
+  padding-left: 50px;
+}
+
+.btn-cancel:hover span:after {
+  opacity: 1;
+  left: 0;
 }
 
 /* Footer */

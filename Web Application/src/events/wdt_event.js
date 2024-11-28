@@ -1,5 +1,3 @@
-const addBtn = document.getElementById('btn-add');
-
 // #region ROW SELECTION
 /**
  * @description - This function applies a specific class for mouse selected rows, that will be used for styling as well as an element identifier.
@@ -31,9 +29,7 @@ export function enableRowSelection(table, type) {
 // #endregion
 
 // #region Schedule Delivery Form Input Listener
-export function formEnterKeyListener() {
-  const formInputs = document.querySelectorAll('#schedule input');
-
+export function formEnterKeyListener(formInputs, addBtn) {
   for (let i = 0; i < formInputs.length; i++) {
     formInputs[i].addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {

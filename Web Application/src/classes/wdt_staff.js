@@ -1,7 +1,9 @@
 import { Employee } from './wdt_employee.js';
 import { createToast } from '../components/wdt_toast.js';
-import { getRowId, getUserDuration, timeInMinutes, hoursToMinutes, minutesToHours, calculateReturnTime } from '../utils/wdt_utility.js';
+import { getRowId, getUserDuration } from '../utils/wdt_utility.js';
+import { Time } from './wdt_time.js';
 
+// #region STAFF CLASS
 export class Staff extends Employee {
   constructor(JSObject) {
     super(JSObject.name, JSObject.surname); //Inherits name and surname from Employee
@@ -32,19 +34,26 @@ export class Staff extends Employee {
   }
 
   staffMemberIsLate(staffMap) {
-    const toastData = {
-      id: `${this.name}.${this.surname}`,
-      picture: this.picture,
-      name: this.name,
-      surname: this.surname,
-      message: `Late by: ${minutesToHours(
-        timeInMinutes() - hoursToMinutes(this.expectedRTime)
-      )} mins`
-    };
-
     const checkIfLate = setInterval(() => {
-      if (staffMap.has(toastData.id) && this.status === 'Out') {
-        if (hoursToMinutes(this.expectedRTime) < timeInMinutes()) {
+      const time = new Time(new Date());
+      const returnTime = time.convertHoursToMins(this.expectedRTime);
+      const currentTime = time.currentTimeInMins();
+      const staffID = `${this.name}.${this.surname}`;
+
+      if (staffMap.has(staffID) && this.status === 'Out') {
+        if (returnTime < currentTime) {
+          //Calculate lateness
+          const timeLate = time.convertMinsToHours(currentTime - returnTime);
+
+          //Create toast notification data and message
+          const toastData = {
+            id: staffID,
+            picture: this.picture,
+            name: this.name,
+            surname: this.surname,
+            message: `Late by: ${timeLate} mins`
+          };
+
           createToast('staff', toastData);
           clearInterval(checkIfLate);
         }
@@ -55,7 +64,9 @@ export class Staff extends Employee {
     return checkIfLate;
   }
 }
+// #endregion 
 
+// #region STAFF IN / OUT AND DOM TABLE UPDATE
 /**
  *
  * @param {Array of rows} rows - The selected HTML DOM Row array containing one or more rows.
@@ -65,12 +76,22 @@ export function staffOut(rows, staffMap) {
   if (rows.length > 0) {
     const input = getUserDuration();
 
+    //If the user cancels the prompt window, we want to de-select the rows and cancel the function
+    if (input === null) {
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        row.classList.remove('selectedRow');
+      }
+      return; //Exit the function when the user cancels
+    }
+
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
-      const outTime = new Date().toLocaleTimeString({}, { timeStyle: 'short' });
-      const duration = minutesToHours(input);
-      const returnTime = calculateReturnTime(input);
+      const time = new Time(new Date()); //We are creating a new instance of the Time class, with a Date object
+      const outTime = time.currentTimeInHours();
+      const duration = time.convertMinsToHours(input);
+      const returnTime = time.addTime(input);
 
       const staffID = getRowId(row);
       const staffInstance = staffMap.get(staffID);
@@ -123,3 +144,4 @@ function updateDOM(row, instance) {
     row.cells[7].innerHTML = '';
   }
 }
+// #endregion
