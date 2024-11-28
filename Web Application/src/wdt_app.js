@@ -1,31 +1,9 @@
 import { staffUserGet } from './api/wdt_api.js';
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
-import { digitalClock } from './utils/wdt_time.js';
-import { populateRow } from './utils/wdt_utility.js';
+import { populateRow, digitalClock } from './utils/wdt_utility.js';
 import { staffIn, staffOut } from './classes/wdt_staff.js';
 import { addDelivery, clearDelivery } from './classes/wdt_delivery.js';
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
-
-// #region EXTRA FEATURES
-const toggle = true; //Set to true to enable extra features
-
-if (toggle) {
-  enableMapFeatures();
-  getLocation(); //Gets the current user location
-  showPopover(); //Shows a little popover when focusing the adress input
-  showMap(); //Allows the user to use the map to find an adress
-}
-// #endregion
-
-
-// #region Digital clock
-
-//Initializes the date and real-time display clock
-setInterval(() => {
-  clock.innerText = digitalClock();
-}, 1000);
-
-// #endregion
 
 // #region DOM Elements
 // DOM Elements
@@ -43,6 +21,28 @@ const clearBtn = document.getElementById('btn-clear');
 const clock = document.getElementById('dateAndTime');
 // #endregion
 
+// #region EXTRA FEATURES
+const toggle = true; //Set to true to enable extra features
+
+if (toggle) {
+  enableMapFeatures();
+  getLocation(); //Gets the current user location
+  showPopover(); //Shows a little popover when focusing the adress input
+  showMap(); //Allows the user to use the map to find an adress
+}
+// #endregion
+
+// #region DIGITAL CLOCK
+
+//Initializes the date and real-time display clock
+
+setInterval(() => {
+  clock.innerText = digitalClock();
+}, 1000);
+
+
+// #endregion
+
 // #region INSTANCE MAPS
 //These maps are used for individual instances, which will allow access to the instance properties and methods.
 const staffMap = new Map();
@@ -53,12 +53,11 @@ const deliveryMap = new Map();
 window.addEventListener('load', () => {
   staffUserGet() //Here we are passing our empty map, which will be filled by the api calls
     .then((staffs) => {
+      for (const staff in staffs) {
+        const staffID = staff;
+        const staffMember = staffs[staff];
 
-      for(const staff in staffs) {
-        const staffID = staff
-        const staffMember = staffs[staff]
-
-        staffMap.set(staffID, staffMember)
+        staffMap.set(staffID, staffMember);
         populateRow(staffTableBody, staffMember, 'staff');
       }
 
@@ -141,5 +140,3 @@ clearBtn.addEventListener('click', () => {
 formEnterKeyListener();
 
 // #endregion
-
-

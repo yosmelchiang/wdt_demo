@@ -1,7 +1,6 @@
 import { Employee } from './wdt_employee.js';
-import { hoursToMinutes, minutesToHours, timeInMinutes } from '../utils/wdt_time.js';
 import { createToast } from '../components/wdt_toast.js';
-import { getRowId } from '../utils/wdt_utility.js';
+import { getRowId, timeInMinutes, hoursToMinutes, minutesToHours } from '../utils/wdt_utility.js';
 
 export class Delivery extends Employee {
   constructor(JSObject) {

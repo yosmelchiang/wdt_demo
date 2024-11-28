@@ -1,12 +1,6 @@
 import { Employee } from './wdt_employee.js';
-import {
-  calculateReturnTime,
-  hoursToMinutes,
-  minutesToHours,
-  timeInMinutes
-} from '../utils/wdt_time.js';
 import { createToast } from '../components/wdt_toast.js';
-import { getRowId, getUserDuration } from '../utils/wdt_utility.js';
+import { getRowId, getUserDuration, timeInMinutes, hoursToMinutes, minutesToHours, calculateReturnTime } from '../utils/wdt_utility.js';
 
 export class Staff extends Employee {
   constructor(JSObject) {
