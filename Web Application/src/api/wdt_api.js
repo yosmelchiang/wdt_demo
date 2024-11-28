@@ -1,6 +1,8 @@
 import { Staff } from '../classes/wdt_staff.js';
 
-export function staffUserGet(staffMap) {
+export function staffUserGet() {
+  let staffs = {};
+
   return fetch('https://randomuser.me/api/?results=5&seed=wdt')
     .then((response) => response.json())
     .then((data) => {
@@ -14,16 +16,12 @@ export function staffUserGet(staffMap) {
           email: users[i].email
         };
 
-        // Creating a staffID for the staffMap key
         const staffID = `${jsObject.name}.${jsObject.surname}`;
+        const newStaff = new Staff(jsObject);
 
-        if (!staffMap.has(staffID)) { // Create a new Staff instance only if the ID doesn't already exists in our map
-          const newStaff = new Staff(jsObject);
-
-          staffMap.set(staffID, newStaff);
-        }
+        staffs[staffID] = newStaff
       }
-      return staffMap; // Return the updated staffMap
+      return staffs;
     })
     .catch((error) => console.log('Error fetching users: ', error));
 }

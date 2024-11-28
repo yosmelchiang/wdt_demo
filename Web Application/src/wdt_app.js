@@ -6,6 +6,18 @@ import { staffIn, staffOut } from './classes/wdt_staff.js';
 import { addDelivery, clearDelivery } from './classes/wdt_delivery.js';
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
 
+// #region EXTRA FEATURES
+const toggle = true; //Set to true to enable extra features
+
+if (toggle) {
+  enableMapFeatures();
+  getLocation(); //Gets the current user location
+  showPopover(); //Shows a little popover when focusing the adress input
+  showMap(); //Allows the user to use the map to find an adress
+}
+// #endregion
+
+
 // #region Digital clock
 
 //Initializes the date and real-time display clock
@@ -39,17 +51,24 @@ const deliveryMap = new Map();
 
 // #region GET USERS FROM API
 window.addEventListener('load', () => {
-  staffUserGet(staffMap) //Here we are passing our empty map, which will be filled by the api calls
-    .then((newStaff) => {
-      for (const [staffID, staffMember] of newStaff) { //Destructuring the staff map(key:value pair), here we are only using the value of each key to populate the rows
-          populateRow(staffTableBody, staffMember, 'staff');
+  staffUserGet() //Here we are passing our empty map, which will be filled by the api calls
+    .then((staffs) => {
+
+      for(const staff in staffs) {
+        const staffID = staff
+        const staffMember = staffs[staff]
+
+        staffMap.set(staffID, staffMember)
+        populateRow(staffTableBody, staffMember, 'staff');
       }
+
       enableRowSelection(staffTableBody, 'staff');
     })
     .catch((error) => {
       console.log('Something went wrong: ', error);
     });
 });
+
 // #endregion
 
 // #region STAFF IN/OUT
@@ -123,14 +142,4 @@ formEnterKeyListener();
 
 // #endregion
 
-// #region EXTRA FEATURES
-const toggle = true; //Set to true to enable extra features
 
-if (toggle) {
-  enableMapFeatures();
-  getLocation(); //Gets the current user location
-  showPopover(); //Shows a little popover when focusing the adress input
-  showMap(); //Allows the user to use the map to find an adress
-}
-
-// #endregion
