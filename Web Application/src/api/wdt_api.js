@@ -1,4 +1,4 @@
-import { Staff } from '../classes/wdt_staff.js';
+import { factory } from '../classes/wdt_factory.js';
 
 // #region API Calls
 export function staffUserGet() {
@@ -17,10 +17,13 @@ export function staffUserGet() {
           email: users[i].email
         };
 
-        const staffID = `${jsObject.name}.${jsObject.surname}`;
-        const newStaff = new Staff(jsObject);
+        const staffInstance = factory.createEmployee('staff', jsObject)
+        
+        //getter
+        // const staffID = `${jsObject.name}.${jsObject.surname}`; //we can implement a class getter to get rid of this process
+        const staffID = staffInstance.id; //we can implement a class getter to get rid of this process
 
-        staffs[staffID] = newStaff
+        staffs[staffID] = staffInstance
       }
       return staffs;
     })

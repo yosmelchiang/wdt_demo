@@ -1,11 +1,10 @@
 import { staffUserGet } from './api/wdt_api.js';
+import { factory } from './classes/wdt_factory.js';
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
 import { populateRow } from './utils/wdt_utility.js';
 import { staffIn, staffOut } from './classes/wdt_staff.js';
 import { addDelivery, clearDelivery } from './classes/wdt_delivery.js';
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
-import { Time } from './classes/wdt_time.js';
-
 // #region DOM Elements
 
 // DOM Elements
@@ -42,7 +41,7 @@ if (toggle) {
 //Initializes the date and real-time display clock
 
 setInterval(() => {
-  const digitalClock = new Time(new Date());
+  const digitalClock = factory.createEmployee('time', new Date())
   clock.innerText = digitalClock.displayDateAndTime();
 }, 1000);
 
@@ -56,6 +55,7 @@ const deliveryMap = new Map();
 
 // #region GET USERS FROM API
 window.addEventListener('load', () => {
+  console.log('All elements have loaded')
   staffUserGet() //Here we are passing our empty map, which will be filled by the api calls
     .then((staffs) => {
       for (const staff in staffs) {

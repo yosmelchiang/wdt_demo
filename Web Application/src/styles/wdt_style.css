@@ -1,23 +1,17 @@
-/* Main body and container configurations */
-/* 
-body { 
+/* Main body and container configurations 
     margin: basic styling that removes default margin applied by browser.
     box-sizing: changes the way height and width of elements are calculated including padding and borders.
-}
 
-.container {
     we are using flexbox here to make sure things look decent on the page.
     we are also applying company rules on font and font color.
-}
 */
 
-#map { 
+#map {
   display: flex;
-  justify-items: center;
+  justify-content: center;
   align-self: center;
-  height: 400px; 
+  height: 400px;
   width: 100%;
-  position: relative;
 }
 
 body {
@@ -40,10 +34,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px;
+  padding: 10px 30px;
   color: #fff;
   text-decoration: none;
   position: relative;
+  font-size: 20px;
 }
 
 .navbar-items {
@@ -51,10 +46,11 @@ body {
   flex-direction: row;
   font-family: 'Consolas', monospace;
   background-color: #0e8ea8;
-  color: #212529
+  color: #212529;
 }
 
-.dropdown-inventory, .dropdown-orders {
+.dropdown-inventory,
+.dropdown-orders {
   display: none;
   font-family: 'Consolar', monospace;
   background-color: #83d1e1;
@@ -62,36 +58,33 @@ body {
   min-width: 100%;
 }
 
-.dropdown-inventory a, .dropdown-orders a {
-    color: #000;
+.dropdown-inventory a,
+.dropdown-orders a {
+  color: #000;
+}
+
+.dropdown .dropdown-inventory,
+.dropdown .dropdown-orders {
+  display: flex; /* Starts as flex, but we are hiding it from the user*/
+  flex-direction: column;
+  opacity: 0; /* Start as invisible */
+  visibility: hidden; /* To prevent user to interact with them while hidden */
+  transition: all 0.5s
 }
 
 .dropdown:hover .dropdown-inventory,
 .dropdown:hover .dropdown-orders {
-  display: flex;
-  flex-direction: column;
-  animation-name: onHoverBg;
-  animation-duration: 1s;
+  opacity: 1; /* Fades in when hovering the navbar elements  */
+  visibility: visible; /* Makes them interactive */
 }
 
-@keyframes onHoverBg {
-    0% {
-        background-color: #3e3c3c;
-    }
-    100% {
-        background-color: #83d1e1;
-    }
+.dropdown-orders a:hover span, .dropdown-inventory a:hover span {
+  text-decoration: underline;
 }
 
-/* Logo and header */
-/* 
-header {
+/* Logo and header 
     using flexbox for nice centered alignment.
-}
-
-logo {
     limiting max with for company logo to 200px.
-}
 */
 .header {
   display: flex;
@@ -105,31 +98,21 @@ logo {
   max-width: 200px;
 }
 
-/* Main Content */
-/* 
+/* Main Content 
+own flexbox container so we can add some nice alignment.
 
-content {
-    own flexbox container so we can add some nice alignment.
-}
+table: applied company rules to border style and color.
+table header: applied company rules to font type, font color and background color.
+table cells: applied company rules to font type, font color and background color.
 
-tables {
-    table: applied company rules to border style and color.
-    table header: applied company rules to font type, font color and background color.
-    table cells: applied company rules to font type, font color and background color.
-}
-
-table buttons {
-    buttons: own flexbox container so we can align it nicely.
-    buttons style: applied company rules to font type and background color.
-}
-
+buttons: own flexbox container so we can align it nicely.
+buttons style: applied company rules to font type and background color.
 */
 
 /* Main content, tables and the buttons are placed inside this */
 .content {
   display: flex;
   flex-direction: column;
-  justify-self: center;
   text-align: center;
 }
 
@@ -162,9 +145,9 @@ table buttons {
 }
 
 /* Handles background and font style on selected rows */
-.content .selectedRow td{
-    background-color:#198754;
-    color: white;
+.content .selectedRow td {
+  background-color: #198754;
+  color: white;
 }
 
 /* Button styling */
@@ -188,17 +171,17 @@ table buttons {
 }
 
 .btn-confirm span {
-  display: inline-block;
+  display: flex;
   position: relative;
   transition: 0.5s;
 }
 
+/* We adding a checkmark to our span, which is initially hidden */
 .btn-confirm span:after {
-  content: '\203A';
+  content: '\2713';
   position: absolute;
   opacity: 0;
-  top: 0;
-  right: -50px;
+  right: 0px;
   transition: 0.5s;
 }
 
@@ -223,17 +206,16 @@ table buttons {
 }
 
 .btn-cancel span {
-  display: inline-block;
+  display: flex;
   position: relative;
   transition: 0.5s;
 }
 
-.btn-cancel span:after {
-  content: '\2039';
+.btn-cancel span:before {
+  content: '\00D7';
   position: absolute;
   opacity: 0;
-  top: 0;
-  left: -50px;
+  left: 0px;
   transition: 0.5s;
 }
 
@@ -241,7 +223,7 @@ table buttons {
   padding-left: 50px;
 }
 
-.btn-cancel:hover span:after {
+.btn-cancel:hover span:before {
   opacity: 1;
   left: 0;
 }

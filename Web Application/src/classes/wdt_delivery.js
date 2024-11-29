@@ -1,25 +1,34 @@
 import { Employee } from './wdt_employee.js';
-import { createToast } from '../components/wdt_toast.js';
 import { getRowId } from '../utils/wdt_utility.js';
-import { Time } from './wdt_time.js';
+import { factory } from './wdt_factory.js';
+
+//Toast container where we will be creating our toasts
+const toastContainer = document.getElementsByClassName('toast-container')[0];
 
 // #region DELIVERY CLASS
 
 export class Delivery extends Employee {
   constructor(JSObject) {
-    super(JSObject.name, JSObject.surname); //Inherit name and surname from Employee
+    super(JSObject); //Inherit name and surname from Employee
+    this.name = JSObject.name;
+    this.surname = JSObject.surname;
     this.vehicle = JSObject.vehicle;
     this.phone = JSObject.phone;
     this.adress = JSObject.adress;
     this.expectedRTime = JSObject.expectedRTime;
   }
 
+  get id() {
+    return `${this.name}.${this.surname}`;
+  }
+
   deliveryDriverIsLate(deliveryMap) {
     const checkIfLate = setInterval(() => {
-      const time = new Time(new Date());
+      const time = factory.createEmployee('time', new Date());
       const returnTime = time.convertHoursToMins(this.expectedRTime);
       const currentTime = time.currentTimeInMins();
-      const deliveryID = `${this.name}.${this.surname}`;
+      // const deliveryID = `${this.name}.${this.surname}`;
+      const deliveryID = this.id;
 
       if (deliveryMap.has(deliveryID)) {
         if (returnTime < currentTime) {
@@ -28,6 +37,7 @@ export class Delivery extends Employee {
 
           //Create toast notification data and message
           const toastData = {
+            container: toastContainer,
             id: deliveryID,
             name: this.name,
             surname: this.surname,
@@ -37,13 +47,14 @@ export class Delivery extends Employee {
             message: `Late by: ${timeLate} mins`
           };
 
-          createToast('delivery', toastData);
+          const toastInstance = factory.createEmployee('deliveryNotification', toastData);
+          toastInstance.Notify();
           clearInterval(checkIfLate);
         }
       } else {
         clearInterval(checkIfLate);
       }
-    }, 6000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
+    }, 60000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
@@ -53,7 +64,7 @@ export class Delivery extends Employee {
 // #region VALIDATE INPUT FIELDS
 export function validateDelivery(inputs) {
   let errorMessage = '';
-  const time = new Time(new Date());
+  const time = factory.createEmployee('time', new Date());
   const inputTime = time.convertHoursToMins(inputs.expectedRTime);
   const currentTime = time.currentTimeInMins();
 
@@ -88,8 +99,8 @@ export function validateDelivery(inputs) {
  */
 export function addDelivery(inputs, deliveryMap) {
   const errorMessage = validateDelivery(inputs);
-  const deliveryID = inputs.name + '.' + inputs.surname;
-  let newDelivery;
+  const deliveryInstance = factory.createEmployee('delivery', inputs);
+  const deliveryID = deliveryInstance.id;
 
   if (errorMessage) {
     alert(errorMessage);
@@ -97,15 +108,12 @@ export function addDelivery(inputs, deliveryMap) {
   }
 
   if (!deliveryMap.has(deliveryID)) {
-    newDelivery = new Delivery(inputs);
-
-    deliveryMap.set(deliveryID, newDelivery);
-    newDelivery.deliveryDriverIsLate(deliveryMap);
+    deliveryMap.set(deliveryID, deliveryInstance);
+    deliveryInstance.deliveryDriverIsLate(deliveryMap);
   } else {
     alert('This user has already been added the board.');
   }
-
-  return newDelivery;
+  return deliveryInstance;
 }
 
 /**

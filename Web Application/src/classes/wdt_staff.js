@@ -1,18 +1,26 @@
 import { Employee } from './wdt_employee.js';
-import { createToast } from '../components/wdt_toast.js';
 import { getRowId, getUserDuration } from '../utils/wdt_utility.js';
-import { Time } from './wdt_time.js';
+import { factory } from './wdt_factory.js';
+
+//Toast container where we will be creating our toasts
+const toastContainer = document.getElementsByClassName('toast-container')[0];
 
 // #region STAFF CLASS
 export class Staff extends Employee {
   constructor(JSObject) {
-    super(JSObject.name, JSObject.surname); //Inherits name and surname from Employee
+    super(JSObject); //Inherits name and surname from Employee
+    this.name = JSObject.name;
+    this.surname = JSObject.surname;
     this.picture = JSObject.picture; //Staff-specific properties
     this.email = JSObject.email;
     this.status = 'In';
     this.outTime = '';
     this.duration = '';
     this.expectedRTime = '';
+  }
+
+  get id() {
+    return `${this.name}.${this.surname}`;
   }
 
   out(row, outTime, duration, expectedRTime) {
@@ -35,10 +43,11 @@ export class Staff extends Employee {
 
   staffMemberIsLate(staffMap) {
     const checkIfLate = setInterval(() => {
-      const time = new Time(new Date());
+      const time = factory.createEmployee('time', new Date());
       const returnTime = time.convertHoursToMins(this.expectedRTime);
       const currentTime = time.currentTimeInMins();
-      const staffID = `${this.name}.${this.surname}`;
+      // const staffID = `${this.name}.${this.surname}`;
+      const staffID = this.id;
 
       if (staffMap.has(staffID) && this.status === 'Out') {
         if (returnTime < currentTime) {
@@ -47,6 +56,7 @@ export class Staff extends Employee {
 
           //Create toast notification data and message
           const toastData = {
+            container: toastContainer,
             id: staffID,
             picture: this.picture,
             name: this.name,
@@ -54,17 +64,19 @@ export class Staff extends Employee {
             message: `Late by: ${timeLate} mins`
           };
 
-          createToast('staff', toastData);
+          const toastInstance = factory.createEmployee('staffNotification', toastData);
+          toastInstance.Notify();
+
           clearInterval(checkIfLate);
         }
       } else {
         clearInterval(checkIfLate);
       }
-    }, 6000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
+    }, 60000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
     return checkIfLate;
   }
 }
-// #endregion 
+// #endregion
 
 // #region STAFF IN / OUT AND DOM TABLE UPDATE
 /**
@@ -82,13 +94,13 @@ export function staffOut(rows, staffMap) {
         const row = rows[i];
         row.classList.remove('selectedRow');
       }
-      return; //Exit the function when the user cancels
+      return; //Returns undefined, which tells the function stop stop processing the rest of the code block
     }
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
-      const time = new Time(new Date()); //We are creating a new instance of the Time class, with a Date object
+      const time = factory.createEmployee('time', new Date());
       const outTime = time.currentTimeInHours();
       const duration = time.convertMinsToHours(input);
       const returnTime = time.addTime(input);
