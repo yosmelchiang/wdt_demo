@@ -1,6 +1,11 @@
 import { factory } from '../classes/wdt_factory.js';
 
 // #region API Calls
+
+/**
+ * Fetches staff users form the Random Usre API and returns a map of staff instances.
+ * @returns {Object} Map of staff instances indexed by ID
+ */
 export function staffUserGet() {
   let staffs = {};
 
@@ -10,6 +15,7 @@ export function staffUserGet() {
       const users = data.results;
 
       for (let i = 0; i < users.length; i++) {
+        
         const jsObject = { //Creating an Object for each fetched user of our API call
           picture: users[i].picture.medium,
           name: users[i].name.first,
@@ -19,9 +25,7 @@ export function staffUserGet() {
 
         const staffInstance = factory.createEmployee('staff', jsObject)
         
-        //getter
-        // const staffID = `${jsObject.name}.${jsObject.surname}`; //we can implement a class getter to get rid of this process
-        const staffID = staffInstance.id; //we can implement a class getter to get rid of this process
+        const staffID = staffInstance.id;
 
         staffs[staffID] = staffInstance
       }

@@ -4,6 +4,13 @@ import { Staff } from './wdt_staff.js';
 import { Time } from './wdt_time.js';
 
 class EmployeeFactory {
+
+  /**
+   * Factory for creating instances of various classes.
+   * @param {String} type - The type of instance to create.
+   * @param {Object} object - The data to initialize the instance with.
+   * @returns {Object} An instance of the requested type.
+   */
     createEmployee(type, object) {
       switch (type) {
         case 'staff':
@@ -17,7 +24,7 @@ class EmployeeFactory {
         case 'deliveryNotification':
           return new DeliveryNotification(object)
         default:
-          console.log('Unknown employee type');
+          throw new Error(`Unknown type: ${type}`)
       }
     }
   }

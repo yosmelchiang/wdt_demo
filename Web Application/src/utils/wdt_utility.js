@@ -80,4 +80,15 @@ export function getRowId(row) {
   return name + '.' + surname;
 }
 
+export function createToast(toastDiv, toastId) {
+  //Activate and show Bootstrap Toast
+  const toastWindow = document.getElementById(`${toastId}`);
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
+    toastBootstrap.show();
+
+    toastWindow.addEventListener('hidden.bs.toast', () => {
+      toastDiv.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+    });
+}
+
 // #endregion

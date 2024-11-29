@@ -4,6 +4,14 @@ export class Time {
     }
   
     //Time display
+
+    updateClock(clockElement) {
+      setInterval(() => {
+        this.dateObject = new Date();
+        clockElement.innerText = this.displayDateAndTime();
+      }, 1000)
+    }
+
     displayDateAndTime() { //Displays current date and time
       const d = this.dateObject;
       const currentDate = d.toLocaleDateString('en-US', { dateStyle: 'full' });

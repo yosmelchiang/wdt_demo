@@ -1,10 +1,26 @@
+// #region IMPORTS
+
+// API Imports
 import { staffUserGet } from './api/wdt_api.js';
+
+// Factory Pattern
 import { factory } from './classes/wdt_factory.js';
+
+/// Event Listeners
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
+
+// Utilities
 import { populateRow } from './utils/wdt_utility.js';
+
+// Components
+import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
+
+// Classes
 import { staffIn, staffOut } from './classes/wdt_staff.js';
 import { addDelivery, clearDelivery } from './classes/wdt_delivery.js';
-import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
+
+// #endregion
+
 // #region DOM Elements
 
 // DOM Elements
@@ -20,30 +36,30 @@ const addBtn = document.getElementById('btn-add');
 const clearBtn = document.getElementById('btn-clear');
 
 const clock = document.getElementById('dateAndTime');
+const digitalClock = factory.createEmployee('time', new Date())
 
 const formInputs = document.querySelectorAll('#schedule input');
+
+const toastContainer = document.getElementsByClassName('toast-container')[0]; //Toast container
 // #endregion
 
 // #region EXTRA FEATURES
-const toggle = true; //Set to true to enable extra features
-
-if (toggle) {
-  enableMapFeatures(); //This function simply hides/shows current location and map icons from the DOM
-  getLocation(); //Gets the current user location
-  showPopover(); //Shows a little popover when focusing the adress input
-  showMap(); //Allows the user to use the map to find an adress
-  formEnterKeyListener(formInputs, addBtn); // This function will allow the ENTER key to submit to Delivery Board
-}
+(function extraFeatures() {
+  if (false) { //Set to true to enable extra features
+    enableMapFeatures(); //This function simply hides/shows current location and map icons from the DOM
+    getLocation(); //Gets the current user location
+    showPopover(); //Shows a little popover when focusing the adress input
+    showMap(); //Allows the user to use the map to find an adress
+    formEnterKeyListener(formInputs, addBtn); // This function will allow the ENTER key to submit to Delivery Board
+  }
+})() 
 // #endregion
 
 // #region DIGITAL CLOCK
 
 //Initializes the date and real-time display clock
 
-setInterval(() => {
-  const digitalClock = factory.createEmployee('time', new Date())
-  clock.innerText = digitalClock.displayDateAndTime();
-}, 1000);
+digitalClock.updateClock(clock)
 
 // #endregion
 
@@ -56,7 +72,7 @@ const deliveryMap = new Map();
 // #region GET USERS FROM API
 window.addEventListener('load', () => {
   console.log('All elements have loaded')
-  staffUserGet() //Here we are passing our empty map, which will be filled by the api calls
+  staffUserGet() 
     .then((staffs) => {
       for (const staff in staffs) {
         const staffID = staff;
@@ -120,7 +136,8 @@ addBtn.addEventListener('click', () => {
     surname: SURNAME.value,
     phone: PHONE.value,
     adress: ADRESS.value,
-    expectedRTime: RETURN.value
+    expectedRTime: RETURN.value,
+    toastContainer: toastContainer
   };
 
   const newDelivery = addDelivery(inputs, deliveryMap);
