@@ -1,5 +1,32 @@
 # Jira Project
 
+# Table of Contents
+
+1. [Jira Project](#jira-project)
+2. [Sprint Plan (4 weeks)](#sprint-plan-4-weeks)
+   - [Sprint 1: Design Phase (18 Nov - 24 Nov)](#sprint-1-18-nov---24-nov---design-phase-1-week)
+     - [Goal](#goal)
+     - [Overview](#overview)
+     - [Epics](#epics)
+     - [Screenshots and explanation](#screenshots-and-explanation)
+   - [Sprint 2: Staff Functionality (25 Nov - 2 Dec)](#sprint-2-25-nov---2-dec---staff-functionality-1-week)
+     - [Goal](#goal-1)
+     - [Overview](#overview-1)
+     - [Epics](#epics-1)
+     - [Screenshots and explanation](#screenshots-and-explanation-1)
+   - [Sprint 3: Delivery Functionality (2 Dec - 8 Dec)](#sprint-3-2-dec---8-dec---delivery-functionality-1-week)
+     - [Goal](#goal-2)
+     - [Overview](#overview-2)
+     - [Epics](#epics-2)
+     - [Screenshots and explanation](#screenshots-and-explanation-2)
+   - [Sprint 4: Finalization and Testing (9 Dec - 15 Dec)](#sprint-4-9-dec---15-dec---finalization-and-testing-1-week)
+     - [Goal](#goal-3)
+     - [Overview](#overview-3)
+     - [Epics](#epics-3)
+     - [Screenshots and explanation](#screenshots-and-explanation-3)
+3. [Reflection Report](#reflection-report)
+
+
 # Sprint Plan (4 weeks)
 
 In this project, we are going to use 4 weeks to develop our application for the We Deliver Tech application, each focusing on a set of epics, issues and tasks.
@@ -356,15 +383,65 @@ This sprint is categorized in the following focus areas:
 
     - Issues
 
-    1.  ![alt text](tasks.png) Implement Factory Design PAttern for our clases
+    1.  ![alt text](tasks.png) Implement Factory Design Pattern for our classes
         - We have decided to importement the Factory Design Pattern for our classes for good usability. This will allow to decrease the amount of modules we have to communicate with by solely allowing the Factory class to handle which type of instance we are creating. The classes we are allowing the factory to make are `staff`, `deliveries`, and `time`. The reason these are classified as good classes to use for our factory is because they all accept an object to work with.
         - The Factory class has its own file `../Web Application/src/classes/wdt_factory.js`
-    1.  ![alt text](tasks.png) Refactor code
-    1.  ![alt text](tasks.png) Perform usability testing and fix bugs
+    2.  ![alt text](tasks.png) Refactor code
+        - We have done some major changes to our application, mostly creating using our `Factory Pattern` more extensively to encapsulate major operations.
+        - We have decided to create a class structure for notifications, again because we are creating an object for the toast window, with relevant information such as name, surname, time late and so on. Some specific properties to different notifications. For example the staff notification only shows a picture, time late and name and surname. While the delivery notification has a few more data, like phone and adress. We have created a base class, base properties such as name, surname and message and some more technical stuff as well as two sub-classes, one for the staff and one for the delivery notification type. Each of those have unique properties each. And since our classes are all accepting an object (toast data) this fits right in with our `Factory Design` pattern, so we can create notification instances just like we create any other instance.
+    3.  ![alt text](tasks.png) Perform usability testing and fix bugs
+        - We have encountered a few minor bugs a long the way, like when the user cancels a prompt window instead of providing a duration. We have solved this by doing some validation for null returns.
+    4.  ![alt text](tasks.png) Write instructions for using the application (read.me)
+        - We have created instructions for using both the application and also external libraries.
+        - The main objective of the `README` file is to serve as a comprehensive, user-friendly guide for both technical and non-technical users. We want to clearly explain the purpose of the application, how to use it, its core features and additional / extra features.
+        - For external libraries, we are providing multiple ways to incorporate them. For this project we have decided to use CDNs, making the project easy to adopt regardless of the users technical background. We have also emphasized some of the prerequisites and detailed instructions to minimize confusion and support effective use, while strictly complying with the project requirements.
+    5.  ![alt text](tasks.png) Complete and submit the Reflection Report
         - 
-    1.  ![alt text](tasks.png) Write instructions for using external libraries (read.me)
-        - x
-    1.  ![alt text](tasks.png) Complete and submit the Reflection Report
-        - x                
+### Backlog
+
+![alt text](image-3.png)
+### Explanation        
+We have decided to apply a final touch to our application by making sure there is responsiveness on the layout and the tables as well as simplify yet making smooth animations to enhance user experience. We have also worked on our Factory Design Pattern to simplify and refactor reusable functionality further instead of just limiting ourselves to the main staff and delivery class. Finally we have created a readme file with instructiong for users with both technincal and non technical backgrounds.
 
 # Reflection Report
+
+## Overview of Project Timeline
+The project requirement initially set a 4-week timeline to complete the "We Deliver Tech" application. The plan was to phase development across four sprints, focusing on design, functionality implementation, and testing. However, my actual progress deviated significantly from this initial plan. By the end of the first week, I had implemented all the core functionalities in a single file, `wdt_app.js`. While this provided a functional prototype, the coe lacked structure and readability. Making my work nearly impossible to maintain and even read. It was at this point I realized that I had made a huge mistake.
+
+Following a restrospective meeting with my teacher the next monday after week 1, it became clear that the code did not meet good design principles or adhere to best practices at all. This realization marked the beginning of my journey to refactor the project. Mistakes were made, and those had to be corrected before moving on.
+
+## The Challenges
+* **Challenge 1: Messy Code**: 
+    * **Problem**: The entire codebase was contained within a single JavaScript file (`wdt_app.js`), at 20k+ lines of code, it was growing in complexity and becoming unmanageable and difficult to debug or scale.
+    * **Solution**: I refactored the entire codebase using a modular approach. By restructuring the project into a logical folder hierarchy and using JavaScript's `export` and `import` features, I created smaller, reusable modules. This approach not only improved the organization but also enhanced the readability of the code. Allowing me to clearly see the application with better eyes and be able once again to see its vulnerabilities.
+    * **Lesson Learned**: Planning well before coding is essential. Visualizing the project structure and taking the time to design a maintainable codebase provides long-term value over rushing to implement functionality. My teacher said it well: Stop moving code around, think well through what you want to achieve, and why you are using the approach you are using and how you can develop a logic that can be reused.
+* **Challenge 2: Lack of OOP Design**
+    * **Problem**: Initially, the functionality was implemented procedurally, which led to code duplication and inefficiency. This became a problem as I was having functionality spread all over the place. No structure at all, just a bunch of functions doing the same things other functions were doing and a lot of repeated code.
+    * **Solution**: I introduced classes to encapsulate functionality. Starting with a base `Employee` class, I extended it into `Staff` and `Delivery` subclasses, modularizing logic specific to each entity. This transition reduced the code from 20k+ lines to a more manageable and modular 5k lines.
+    * **Lesson Learned**: Object-oriented principles like inheritance and encapsulation significally reduce code duplication and improve maintanability.
+* **Challenge 3: Managing Time-Related Operations**
+    * **Problem**: Time-related operations, such as conversions and display, were scattered throughout the code, I had the `Date` object created over and over for each operation, leading to bad readibility and inconsistencies.
+    * **Solution**: To solve this problem, I created a dedicated `Time` class to centralize all time-related methods, such as converting minutes to hours, adding durations, and formatting time strings. This class became a single source of thruth for time operations, ensuring consistency and resuability across the application.
+    * **Lesson Learned**: Grouping related functionality into cohesive units (classes) improves clarity and reduces redundancy.
+* **Challenge 4: Creating reusable components**
+    * **Problem**: The application required various types of notifications (one for staff and one for deliveries), but the initial implementation lacked flexibility and scalability.
+    * **Solition**: I implemented the Factory Design Pattern, allowing for creation of instances of various classes ( Staff, Delivery Time, and lastly Notification) through a unified factory. The `Notification` class, for instance, was extended to handle both staff and delivery-specific notifications, maintaining consistency while enabling customization.
+    * **Lesson Learned**: Design patterns like the Factory Pattern simplify the instantiation process and enhances scalability for future requirements.
+
+## Insights and Lessons Learned
+1. **The value of planning**:
+    - Jumping into coding without a clear plan led to inefficiencies and rework. Taking time to design the project structure upfront could have saved significant effort later.
+2. **Refactoring as a learning opportunity**
+    - Wile refactoring was extremely challenging, it taught me the importance of clean code and modular design. The process improved not just the project but also my understanding of good coding practices.
+3. **Object-Oriented Thinking**
+    - While we have learned the importance of OOP, it took me this project to realize how much it really mattered in practice. With a few lines of codes, OOP might not seem like a big deal, but if I plan to scale this project, it matters a lot. Implementing classes and properly leveraing inheritance helped me better organize the application logic. It also highlighted the power of encapsulation in managing complexity.
+4. **Embracing Design Patterns**
+    - The Factory Design pattern might not seem like a big deal at first, why not just use the constructor and the `new` keyword right? Well in this project we used objects, not just for the `Staff` and `Delivery`, but also to create content for the toast notificaiton, and we also used the Date object. So having a factory pattern create classes that all one thing in commong, they take javascript objects, made a lot of sense to me. Using the Factory Design Pattern opened up new possibilities for scalability and maintanability, ensuring the codebase could handle future extensions with mininmal changes.
+5. **Process over results**
+    - Shifting my mindset early on from a result-driven approach to a process-oriented one made the project more manageable and enjoyable to work with. The result-driven approach limited creativity while the process-oriented one allowed for more possible improvements overall. This perspective will guide me in future projects.
+
+## Current state
+While the project is currently functional and much cleaner than the initial implementation, I recognize that there is always room for improvemenet. This being my very first project, going forward, I aim to:
+    - Continue refining te code for better readability.
+    - Enhance documentation to make the project more accessible to other developers.
+    - apply these lessons for future projects by prioritizing planning and designing with scalability in mind.

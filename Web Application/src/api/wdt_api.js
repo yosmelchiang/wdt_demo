@@ -4,7 +4,7 @@ import { factory } from '../classes/wdt_factory.js';
 export function staffUserGet() {
   let staffs = {};
 
-  return fetch('https://randomuser.me/api/?results=5&seed=wdt')
+  return fetch('https://randomuser.me/api/?results=5&seed=wdttm')
     .then((response) => response.json())
     .then((data) => {
       const users = data.results;
