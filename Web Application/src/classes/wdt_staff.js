@@ -8,9 +8,7 @@ const toastContainer = document.getElementsByClassName('toast-container')[0];
 // #region STAFF CLASS
 export class Staff extends Employee {
   constructor(JSObject) {
-    super(JSObject); //Inherits name and surname from Employee
-    this.name = JSObject.name;
-    this.surname = JSObject.surname;
+    super(JSObject.name, JSObject.surname)
     this.picture = JSObject.picture; //Staff-specific properties
     this.email = JSObject.email;
     this.status = 'In';
