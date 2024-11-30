@@ -7,9 +7,7 @@ import { factory } from './wdt_factory.js';
 
 export class Delivery extends Employee {
   constructor(JSObject) {
-    super(JSObject); //Inherit name and surname from Employee
-    this.name = JSObject.name;
-    this.surname = JSObject.surname;
+    super(JSObject.name, JSObject.surname); //Inherit name and surname from Employee
     this.vehicle = JSObject.vehicle;
     this.phone = JSObject.phone;
     this.adress = JSObject.adress;
