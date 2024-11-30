@@ -1,6 +1,6 @@
 # Web Application Documentation
 
-## Overview
+## Project Overview
 This application is designed for WeDeliverTECH™.
 
 This application serves as a platform for receptionists of WeDeliverTECH™ to manage their reception activities, focusing on staff member out-of-office clocking functionality and notification system as well as tracking deliveries of orders to customers. The application provides an intuitive Reception Management dashboard to help the receptionist manage staff presence and delivery information effectively.
@@ -38,12 +38,6 @@ A modern web browser is required to run this application. Supported browsers inc
 * Microsoft Edge (latest version)
 * Safari (latest version)
 * Opera (latest version)
-
-## Installation
-1. Clone the Repository
-`git clone <repository-url>`
-2. Navigate to the Project Directory
-`cd Web_Application`
 
 ## Running the Application
 Simply open the `index.html` file in your web browser to use the application.
