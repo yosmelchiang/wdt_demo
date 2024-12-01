@@ -21,7 +21,7 @@ class Notification {
     toast.innerHTML = `
       <div id="${
         this.id
-      }" class="toast text-bg-danger border-0 p-3 mb-3 role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+      }" class="toast text-bg-danger role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
         <div class="toast-header text-bg-danger border-0">
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -109,6 +109,7 @@ export class DeliveryNotification extends Notification {
   content() {
     return `
     <p>${this.name} ${this.surname}</p>
+    <p>Return time was: ${this.return}</p>
     <p>Address: ${this.adress}</p>
     <p>Phone: ${this.phone}</p>
     <p>${this.message}</p>

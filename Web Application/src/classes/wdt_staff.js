@@ -54,7 +54,7 @@ export class Staff extends Employee {
 
           //Create toast notification data and message
           const toastData = {
-            container: toastContainer,
+            container: staffMap.get('toastContainer'),
             id: staffID,
             picture: this.picture,
             name: this.name,

@@ -35,7 +35,7 @@ export class Time {
      * @returns {String} - Returns time in a HH:MM format
      */
     addTime(minutes) { 
-      const d = this.dateObject;
+      const d = new Date(this.dateObject)
       d.setMinutes(d.getMinutes() + minutes);
       return d.toLocaleTimeString({}, { timeStyle: 'short'})
     }

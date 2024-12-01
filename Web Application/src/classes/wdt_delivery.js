@@ -12,7 +12,6 @@ export class Delivery extends Employee {
     this.phone = JSObject.phone;
     this.adress = JSObject.adress;
     this.expectedRTime = JSObject.expectedRTime;
-    this.toastContainer = JSObject.toastContainer
   }
 
   get id() {
@@ -34,7 +33,7 @@ export class Delivery extends Employee {
 
           //Create toast notification data and message
           const toastData = {
-            container: this.toastContainer,
+            container: deliveryMap.get('toastContainer'),
             id: deliveryID,
             name: this.name,
             surname: this.surname,

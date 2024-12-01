@@ -6,6 +6,11 @@
     we are also applying company rules on font and font color.
 */
 
+.toast {
+  text-align: center;
+  max-width: 200px !important;
+}
+
 #map {
   display: flex;
   justify-content: center;

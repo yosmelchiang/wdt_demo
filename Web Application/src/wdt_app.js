@@ -63,10 +63,15 @@ digitalClock.updateClock(clock)
 
 // #endregion
 
-// #region INSTANCE MAPS
+// #region MAPS
 //These maps are used for individual instances, which will allow access to the instance properties and methods.
 const staffMap = new Map();
 const deliveryMap = new Map();
+
+//We are passing the toastContainer to both maps, so we can easily access it throughout our code
+staffMap.set('toastContainer', toastContainer)
+deliveryMap.set('toastContainer', toastContainer)
+
 // #endregion
 
 // #region GET USERS FROM API
@@ -136,8 +141,7 @@ addBtn.addEventListener('click', () => {
     surname: SURNAME.value,
     phone: PHONE.value,
     adress: ADRESS.value,
-    expectedRTime: RETURN.value,
-    toastContainer: toastContainer
+    expectedRTime: RETURN.value
   };
 
   const newDelivery = addDelivery(inputs, deliveryMap);
