@@ -30,13 +30,16 @@ const staffTableBody = staffTable.getElementsByTagName('tbody')[0]; //Staff tabl
 const inButton = document.getElementById('btn-in');
 const outButton = document.getElementById('btn-out');
 
+const scheduleDelivery = document.getElementById('schedule');
+const scheduleVehicle = scheduleDelivery.getElementsByTagName('select');
+const scheduleInputs = scheduleDelivery.getElementsByTagName('input');
+
 const deliveryTable = document.getElementById('delivery'); //Main delivery board table
 const deliveryTableBody = deliveryTable.getElementsByTagName('tbody')[0]; //Delivery table body
 const addBtn = document.getElementById('btn-add');
 const clearBtn = document.getElementById('btn-clear');
-
 const clock = document.getElementById('dateAndTime');
-const digitalClock = factory.createEmployee('time', new Date())
+const digitalClock = factory.createEmployee('time', new Date());
 
 const formInputs = document.querySelectorAll('#schedule input');
 
@@ -45,21 +48,22 @@ const toastContainer = document.getElementsByClassName('toast-container')[0]; //
 
 // #region EXTRA FEATURES
 (function extraFeatures() {
-  if (false) { //Set to true to enable extra features
+  if (false) {
+    //Set to true to enable extra features
     enableMapFeatures(); //This function simply hides/shows current location and map icons from the DOM
     getLocation(); //Gets the current user location
     showPopover(); //Shows a little popover when focusing the adress input
     showMap(); //Allows the user to use the map to find an adress
     formEnterKeyListener(formInputs, addBtn); // This function will allow the ENTER key to submit to Delivery Board
   }
-})() 
+})();
 // #endregion
 
 // #region DIGITAL CLOCK
 
 //Initializes the date and real-time display clock
 
-digitalClock.updateClock(clock)
+digitalClock.updateClock(clock);
 
 // #endregion
 
@@ -69,15 +73,15 @@ const staffMap = new Map();
 const deliveryMap = new Map();
 
 //We are passing the toastContainer to both maps, so we can easily access it throughout our code
-staffMap.set('toastContainer', toastContainer)
-deliveryMap.set('toastContainer', toastContainer)
+staffMap.set('toastContainer', toastContainer);
+deliveryMap.set('toastContainer', toastContainer);
 
 // #endregion
 
 // #region GET USERS FROM API
 window.addEventListener('load', () => {
-  console.log('All elements have loaded')
-  staffUserGet() 
+  console.log('All elements have loaded');
+  staffUserGet()
     .then((staffs) => {
       for (const staff in staffs) {
         const staffID = staff;
@@ -120,38 +124,30 @@ inButton.addEventListener('click', function () {
 
 // #region DELIVERIES ADD/CLEAR
 addBtn.addEventListener('click', () => {
-  const VEHICLE = document.getElementById('sch-vehicle');
-  const NAME = document.getElementById('sch-fname');
-  const SURNAME = document.getElementById('sch-lname');
-  const PHONE = document.getElementById('sch-phone');
-  const ADRESS = document.getElementById('sch-adress');
-  const RETURN = document.getElementById('sch-rtime');
+  const { vehicle } = scheduleVehicle;
+  const { fname, lname, phone, adress, rtime } = scheduleInputs;
 
-  let vehIcon = '';
+  const vehIcon =
+    vehicle.value === 'Car'
+      ? `<i class="fa fa-car" aria-hidden="true"></i>`
+      : `<i class="fa-solid fa-motorcycle"></i>`;
 
-  if (VEHICLE.value === 'Car') {
-    vehIcon = `<i class="fa fa-car" aria-hidden="true"></i>`;
-  } else {
-    vehIcon = `<i class="fa-solid fa-motorcycle"></i>`;
-  }
-
-  const inputs = {
-    vehicle: vehIcon,
-    name: NAME.value,
-    surname: SURNAME.value,
-    phone: PHONE.value,
-    adress: ADRESS.value,
-    expectedRTime: RETURN.value
-  };
-
-  const newDelivery = addDelivery(inputs, deliveryMap);
+  const newDelivery = addDelivery(
+    {
+      vehicle: vehIcon,
+      name: fname.value,
+      surname: lname.value,
+      phone: phone.value,
+      adress: adress.value,
+      expectedRTime: rtime.value
+    },
+    deliveryMap
+  );
 
   //Clear the table values
-  NAME.value = '';
-  SURNAME.value = '';
-  PHONE.value = '';
-  ADRESS.value = '';
-  RETURN.value = '';
+  for (const inputs of scheduleInputs) {
+    inputs.value = '';
+  }
 
   populateRow(deliveryTableBody, newDelivery, 'delivery');
   enableRowSelection(deliveryTableBody, 'delivery');
