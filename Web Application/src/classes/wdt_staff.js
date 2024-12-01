@@ -2,9 +2,6 @@ import { Employee } from './wdt_employee.js';
 import { getRowId, getUserDuration } from '../utils/wdt_utility.js';
 import { factory } from './wdt_factory.js';
 
-//Toast container where we will be creating our toasts
-const toastContainer = document.getElementsByClassName('toast-container')[0];
-
 // #region STAFF CLASS
 export class Staff extends Employee {
   constructor(JSObject) {
