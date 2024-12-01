@@ -4,7 +4,7 @@ export class Time {
     }
   
     //Time display
-
+    
     updateClock(clockElement) {
       setInterval(() => {
         this.dateObject = new Date();

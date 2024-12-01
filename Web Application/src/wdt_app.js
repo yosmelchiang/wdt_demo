@@ -87,7 +87,7 @@ outButton.addEventListener('click', () => {
     staffOut(rows, EMPLOYEES);
     return;
   }
-  alert("You haven't selected any rows, please select one or more  rows and try again.");
+  alert("You haven't selected any rows, please select one or more rows and try again.");
 });
 
 inButton.addEventListener('click', () => {

@@ -35,9 +35,10 @@ export function invalidDuration(input) {
 
 // #region DOM Table Row population
 /** ROW POPULATION: Staff and Delivery table
- * @description - This function will populate the DOM with the class instance
- * @param {DOM} element - DOM element, usually a table body
- * @param {Class} instance - Class object and its properties
+ * @description - This function will populate the DOM with the class instance.
+ * @param {DOM} element - DOM element, usually a table body.
+ * @param {Class} instance - Class object and its properties.
+ * @param {Type} type - The type of employee we are populating these rows for.
  */
 export function populateRow(table, instance, type) {
   const row = document.createElement('tr');
