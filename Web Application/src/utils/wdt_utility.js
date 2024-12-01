@@ -42,7 +42,7 @@ export function invalidDuration(input) {
 export function populateRow(table, instance, type) {
   const row = document.createElement('tr');
 
-  if (type === 'staff') {
+  if (type === 'staff' && instance !== undefined ) {
     row.innerHTML = `
     <td><img src="${instance.picture}" alt="Staff Picture"></td>
     <td>${instance.name}</td>
@@ -53,7 +53,7 @@ export function populateRow(table, instance, type) {
     <td>${instance.duration}</td>
     <td>${instance.expectedRTime}</td>
     `;
-  } else if (type === 'delivery') {
+  } else if (type === 'delivery' && instance !== undefined) {
     row.innerHTML = `
     <td>${instance.vehicle}</td>
     <td>${instance.name}</td>
@@ -63,7 +63,6 @@ export function populateRow(table, instance, type) {
     <td>${instance.expectedRTime || ''}</td>
   `;
   } else {
-    console.log('Something went wrong');
     return;
   }
   table.appendChild(row);

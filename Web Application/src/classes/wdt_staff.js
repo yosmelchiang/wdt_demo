@@ -36,22 +36,23 @@ export class Staff extends Employee {
     updateDOM(row, this);
   }
 
-  staffMemberIsLate(staffMap) {
+  staffMemberIsLate(EMPLOYEES) {
+    const { toastContainer } = EMPLOYEES.get('DOM Elements')
+    
     const checkIfLate = setInterval(() => {
       const time = factory.createEmployee('time', new Date());
       const returnTime = time.convertHoursToMins(this.expectedRTime);
       const currentTime = time.currentTimeInMins();
-      // const staffID = `${this.name}.${this.surname}`;
       const staffID = this.id;
 
-      if (staffMap.has(staffID) && this.status === 'Out') {
+      if (EMPLOYEES.has(staffID) && this.status === 'Out') {
         if (returnTime < currentTime) {
           //Calculate lateness
           const timeLate = time.convertMinsToHours(currentTime - returnTime);
 
           //Create toast notification data and message
           const toastData = {
-            container: staffMap.get('toastContainer'),
+            container: toastContainer,
             id: staffID,
             picture: this.picture,
             name: this.name,
@@ -77,9 +78,9 @@ export class Staff extends Employee {
 /**
  *
  * @param {Array of rows} rows - The selected HTML DOM Row array containing one or more rows.
- * @param {Map} staffMap - The map containing all instances.
+ * @param {Map} EMPLOYEES - The map containing all instances.
  */
-export function staffOut(rows, staffMap) {
+export function staffOut(rows, EMPLOYEES) {
   if (rows.length > 0) {
     const input = getUserDuration();
 
@@ -101,10 +102,10 @@ export function staffOut(rows, staffMap) {
       const returnTime = time.addTime(input);
 
       const staffID = getRowId(row);
-      const staffInstance = staffMap.get(staffID);
+      const staffInstance = EMPLOYEES.get(staffID);
 
       staffInstance.out(row, outTime, duration, returnTime);
-      staffInstance.staffMemberIsLate(staffMap);
+      staffInstance.staffMemberIsLate(EMPLOYEES);
 
       row.classList.remove('selectedRow');
     }
@@ -114,15 +115,15 @@ export function staffOut(rows, staffMap) {
 /**
  *
  * @param {Array of rows} rows - The selected HTML DOM Row array containing one or more rows.
- * @param {Map} staffMap - The map containing all instances.
+ * @param {Map} EMPLOYEES - The map containing all instances.
  */
-export function staffIn(rows, staffMap) {
+export function staffIn(rows, EMPLOYEES) {
   if (rows.length > 0) {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
       const staffID = getRowId(row);
-      const staffInstance = staffMap.get(staffID);
+      const staffInstance = EMPLOYEES.get(staffID);
 
       if (staffInstance) {
         staffInstance.in(row);

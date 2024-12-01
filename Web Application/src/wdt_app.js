@@ -7,10 +7,7 @@ import { staffUserGet } from './api/wdt_api.js';
 import { factory } from './classes/wdt_factory.js';
 
 /// Event Listeners
-import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js';
-
-// Utilities
-import { populateRow } from './utils/wdt_utility.js';
+import { formEnterKeyListener } from './events/wdt_event.js';
 
 // Components
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js';
@@ -68,54 +65,36 @@ digitalClock.updateClock(clock);
 // #endregion
 
 // #region MAPS
-//These maps are used for individual instances, which will allow access to the instance properties and methods.
-const staffMap = new Map();
-const deliveryMap = new Map();
-
-//We are passing the toastContainer to both maps, so we can easily access it throughout our code
-staffMap.set('toastContainer', toastContainer);
-deliveryMap.set('toastContainer', toastContainer);
+//This map will be used to ensure proper use of DOM elements as well as to ensure we dont accidentally enter duplicate users
+const EMPLOYEES = new Map();
+EMPLOYEES.set('DOM Elements', { toastContainer, staffTableBody, deliveryTableBody });
 
 // #endregion
 
 // #region GET USERS FROM API
 window.addEventListener('load', () => {
   console.log('All elements have loaded');
-  staffUserGet()
-    .then((staffs) => {
-      for (const staff in staffs) {
-        const staffID = staff;
-        const staffMember = staffs[staff];
-
-        staffMap.set(staffID, staffMember);
-        populateRow(staffTableBody, staffMember, 'staff');
-      }
-
-      enableRowSelection(staffTableBody, 'staff');
-    })
-    .catch((error) => {
-      console.log('Something went wrong: ', error);
-    });
+  staffUserGet(EMPLOYEES);
 });
 
 // #endregion
 
 // #region STAFF IN/OUT
-outButton.addEventListener('click', function () {
+outButton.addEventListener('click', () => {
   const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
   if (selectedRows.length > 0) {
     const rows = Array.from(selectedRows);
-    staffOut(rows, staffMap);
+    staffOut(rows, EMPLOYEES);
     return;
   }
   alert("You haven't selected any rows, please select one or more  rows and try again.");
 });
 
-inButton.addEventListener('click', function () {
+inButton.addEventListener('click', () => {
   const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
   if (selectedRows.length > 0) {
     const rows = Array.from(selectedRows);
-    staffIn(rows, staffMap);
+    staffIn(rows, EMPLOYEES);
     return;
   }
   alert("You haven't selected any rows, please select one or more rows and try again.");
@@ -132,7 +111,7 @@ addBtn.addEventListener('click', () => {
       ? `<i class="fa fa-car" aria-hidden="true"></i>`
       : `<i class="fa-solid fa-motorcycle"></i>`;
 
-  const newDelivery = addDelivery(
+  addDelivery(
     {
       vehicle: vehIcon,
       name: fname.value,
@@ -141,16 +120,13 @@ addBtn.addEventListener('click', () => {
       adress: adress.value,
       expectedRTime: rtime.value
     },
-    deliveryMap
+    EMPLOYEES
   );
 
   //Clear the table values
   for (const inputs of scheduleInputs) {
     inputs.value = '';
   }
-
-  populateRow(deliveryTableBody, newDelivery, 'delivery');
-  enableRowSelection(deliveryTableBody, 'delivery');
 });
 
 clearBtn.addEventListener('click', () => {
@@ -158,6 +134,6 @@ clearBtn.addEventListener('click', () => {
 
   const rows = Array.from(selectedRow);
 
-  clearDelivery(rows, deliveryMap);
+  clearDelivery(rows, EMPLOYEES);
 });
 // #endregion

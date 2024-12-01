@@ -1,6 +1,7 @@
 import { Employee } from './wdt_employee.js';
-import { getRowId } from '../utils/wdt_utility.js';
+import { getRowId, populateRow } from '../utils/wdt_utility.js';
 import { factory } from './wdt_factory.js';
+import { enableRowSelection } from '../events/wdt_event.js';
 
 
 // #region DELIVERY CLASS
@@ -18,22 +19,23 @@ export class Delivery extends Employee {
     return `${this.name}.${this.surname}`;
   }
 
-  deliveryDriverIsLate(deliveryMap) {
+  deliveryDriverIsLate(EMPLOYEES) {
+    const { toastContainer } = EMPLOYEES.get('DOM Elements')
+
     const checkIfLate = setInterval(() => {
       const time = factory.createEmployee('time', new Date());
       const returnTime = time.convertHoursToMins(this.expectedRTime);
       const currentTime = time.currentTimeInMins();
-      // const deliveryID = `${this.name}.${this.surname}`;
       const deliveryID = this.id;
 
-      if (deliveryMap.has(deliveryID)) {
+      if (EMPLOYEES.has(deliveryID)) {
         if (returnTime < currentTime) {
           //Calculate lateness
           const timeLate = time.convertMinsToHours(currentTime - returnTime);
 
           //Create toast notification data and message
           const toastData = {
-            container: deliveryMap.get('toastContainer'),
+            container: toastContainer,
             id: deliveryID,
             name: this.name,
             surname: this.surname,
@@ -89,13 +91,16 @@ export function validateDelivery(inputs) {
 
 // #region ADD / CLEAR DELIVERIES
 /**
- *
- * @param {Object} inputs - Object containing input values
- * @returns {Class} - Class instance created
+ * 
+ * @param {Object} inputs - Input fields required to populate a new row with the provided delivery details.
+ * @param {Map} EMPLOYEES - Map used to verify that this user does not already exist in the system.
+ * @returns 
  */
-export function addDelivery(inputs, deliveryMap) {
+export function addDelivery(inputs, EMPLOYEES) {
+  const { deliveryTableBody } = EMPLOYEES.get('DOM Elements')
   const errorMessage = validateDelivery(inputs);
   const deliveryInstance = factory.createEmployee('delivery', inputs);
+  console.log('deliveryInstance:', deliveryInstance)
   const deliveryID = deliveryInstance.id;
 
   if (errorMessage) {
@@ -103,21 +108,25 @@ export function addDelivery(inputs, deliveryMap) {
     return;
   }
 
-  if (!deliveryMap.has(deliveryID)) {
-    deliveryMap.set(deliveryID, deliveryInstance);
-    deliveryInstance.deliveryDriverIsLate(deliveryMap);
+  if (!EMPLOYEES.has(deliveryID)) {
+    EMPLOYEES.set(deliveryID, deliveryInstance);
+    deliveryInstance.deliveryDriverIsLate(EMPLOYEES);
+
+    populateRow(deliveryTableBody, deliveryInstance, 'delivery');
+    enableRowSelection(deliveryTableBody, 'delivery');
+
   } else {
-    alert('This user has already been added the board.');
+    alert('This user already exists.');
+    return;
   }
-  return deliveryInstance;
 }
 
 /**
  *
  * @param {Array of rows} rows - The selected HTML DOM Row array containing one or more rows.
- * @param {Map} staffMap - The map containing all instances.
+ * @param {Map} EMPLOYEES - The map containing all instances.
  */
-export function clearDelivery(rows, deliveryMap) {
+export function clearDelivery(rows, EMPLOYEES) {
   if (rows.length > 0) {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -127,7 +136,7 @@ export function clearDelivery(rows, deliveryMap) {
       Are you sure you want to clear ${deliveryID.replace('.', ' ')} from the board?
       `;
       if (confirm(message) == true) {
-        deliveryMap.delete(deliveryID);
+        EMPLOYEES.delete(deliveryID);
         row.remove();
       }
     }
