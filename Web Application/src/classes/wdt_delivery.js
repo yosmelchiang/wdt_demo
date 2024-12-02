@@ -24,14 +24,11 @@ export class Delivery extends Employee {
 
     const checkIfLate = setInterval(() => {
       const time = factory.createEmployee('time', new Date());
-      const returnTime = time.convertHoursToMins(this.expectedRTime);
-      const currentTime = time.currentTimeInMins();
+      const late = time.isLate(this.expectedRTime)
       const deliveryID = this.id;
 
       if (EMPLOYEES.has(deliveryID)) {
-        if (returnTime < currentTime) {
-          //Calculate lateness
-          const timeLate = time.convertMinsToHours(currentTime - returnTime);
+        if (late) {
 
           //Create toast notification data and message
           const toastData = {
@@ -42,7 +39,7 @@ export class Delivery extends Employee {
             phone: this.phone,
             adress: this.adress,
             return: this.expectedRTime,
-            message: `Late by: ${timeLate} mins`
+            message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
           };
 
           const toastInstance = factory.createEmployee('deliveryNotification', toastData);
@@ -100,7 +97,6 @@ export function addDelivery(inputs, EMPLOYEES) {
   const { deliveryTableBody } = EMPLOYEES.get('DOM Elements')
   const errorMessage = validateDelivery(inputs);
   const deliveryInstance = factory.createEmployee('delivery', inputs);
-  console.log('deliveryInstance:', deliveryInstance)
   const deliveryID = deliveryInstance.id;
 
   if (errorMessage) {
@@ -117,7 +113,6 @@ export function addDelivery(inputs, EMPLOYEES) {
 
   } else {
     alert('This user already exists.');
-    return;
   }
 }
 
@@ -128,14 +123,13 @@ export function addDelivery(inputs, EMPLOYEES) {
  */
 export function clearDelivery(rows, EMPLOYEES) {
   if (rows.length > 0) {
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+    for (const row of rows) {
       const deliveryID = getRowId(row);
 
       let message = `
       Are you sure you want to clear ${deliveryID.replace('.', ' ')} from the board?
       `;
-      if (confirm(message) == true) {
+      if (confirm(message)) {
         EMPLOYEES.delete(deliveryID);
         row.remove();
       }

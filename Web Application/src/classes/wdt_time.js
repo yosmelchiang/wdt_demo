@@ -3,9 +3,8 @@ export class Time {
       this.dateObject = dateObject;
     }
   
-    //Time display
-    
-    updateClock(clockElement) {
+    //Time display 
+    displayTime(clockElement) {
       setInterval(() => {
         this.dateObject = new Date();
         clockElement.innerText = this.displayDateAndTime();
@@ -38,6 +37,18 @@ export class Time {
       const d = new Date(this.dateObject)
       d.setMinutes(d.getMinutes() + minutes);
       return d.toLocaleTimeString({}, { timeStyle: 'short'})
+    }
+
+    isLate(value) {
+      const returnTime = this.convertHoursToMins(value);
+      const currentTime = this.currentTimeInMins();
+      return returnTime < currentTime
+    }
+
+    lateBy(value) {
+      const returnTime = this.convertHoursToMins(value);
+      const currentTime = this.currentTimeInMins();
+      return currentTime - returnTime
     }
   
     //Time conversions

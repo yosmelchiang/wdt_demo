@@ -1,27 +1,8 @@
 import { factory } from '../classes/wdt_factory.js';
-import { enableRowSelection } from '../events/wdt_event.js';
-import { populateRow } from '../utils/wdt_utility.js';
 
 // #region API Calls
 
-export function staffUserGet(EMPLOYEES) {
-  const { staffTableBody } = EMPLOYEES.get('DOM Elements')
-  
-  fetchUser()
-  .then(staffs => {
-    for (const staff in staffs) {
-      const staffID = staff;
-      const staffMember = staffs[staff];
-
-      EMPLOYEES.set(staffID, staffMember);
-      populateRow(staffTableBody, staffMember, 'staff');
-    }
-    enableRowSelection(staffTableBody, 'staff');
-  })
-  .catch(error => console.log('Something went wrong', error))
-}
-
-function fetchUser() {
+export function getData() {
   let staffs = {};
 
   return (

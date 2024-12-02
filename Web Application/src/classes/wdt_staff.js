@@ -41,14 +41,12 @@ export class Staff extends Employee {
     
     const checkIfLate = setInterval(() => {
       const time = factory.createEmployee('time', new Date());
-      const returnTime = time.convertHoursToMins(this.expectedRTime);
-      const currentTime = time.currentTimeInMins();
+      const late = time.isLate(this.expectedRTime)
+
       const staffID = this.id;
 
       if (EMPLOYEES.has(staffID) && this.status === 'Out') {
-        if (returnTime < currentTime) {
-          //Calculate lateness
-          const timeLate = time.convertMinsToHours(currentTime - returnTime);
+        if (late) {
 
           //Create toast notification data and message
           const toastData = {
@@ -57,7 +55,7 @@ export class Staff extends Employee {
             picture: this.picture,
             name: this.name,
             surname: this.surname,
-            message: `Late by: ${timeLate} mins`
+            message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
           };
 
           const toastInstance = factory.createEmployee('staffNotification', toastData);
@@ -86,15 +84,13 @@ export function staffOut(rows, EMPLOYEES) {
 
     //If the user cancels the prompt window, we want to de-select the rows and cancel the function
     if (input === null) {
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
+      for (const row of rows) {
         row.classList.remove('selectedRow');
       }
       return; //Returns undefined, which tells the function stop stop processing the rest of the code block
     }
 
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+    for (const row of rows) {
 
       const time = factory.createEmployee('time', new Date());
       const outTime = time.currentTimeInHours();
@@ -119,8 +115,7 @@ export function staffOut(rows, EMPLOYEES) {
  */
 export function staffIn(rows, EMPLOYEES) {
   if (rows.length > 0) {
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+    for (const row of rows) {
 
       const staffID = getRowId(row);
       const staffInstance = EMPLOYEES.get(staffID);
