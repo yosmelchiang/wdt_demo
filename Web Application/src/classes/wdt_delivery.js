@@ -21,6 +21,7 @@ export class Delivery extends Employee {
 
   deliveryDriverIsLate(EMPLOYEES) {
     const { toastContainer } = EMPLOYEES.get('DOM Elements')
+    const { lateInterval } = EMPLOYEES.get('Settings')
 
     const checkIfLate = setInterval(() => {
       const time = factory.createEmployee('time', new Date());
@@ -49,7 +50,7 @@ export class Delivery extends Employee {
       } else {
         clearInterval(checkIfLate);
       }
-    }, 60000); //Change this to 60000 (1min) interval instead of 1 second to prevent performance issues
+    }, lateInterval); //Change the interval in WDT_APP.js Settings
     return checkIfLate;
   }
 }

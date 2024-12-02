@@ -2,32 +2,28 @@ import { factory } from '../classes/wdt_factory.js';
 
 // #region API Calls
 
-export function getData() {
-  let staffs = {};
+export function getData(JSObject) {
 
-  return (
-    fetch('https://randomuser.me/api/?results=5&seed=wdttm')
-      .then(response => response.json())
-      // // Destructure data and create instances for each user
-      .then(({ results: data }) => {
-        for (const { name, picture, email } of data) {
-          const { first, last } = name;
-          const { medium } = picture;
 
-          const staffInstance = factory.createEmployee('staff', {
-            picture: medium,
-            name: first,
-            surname: last,
-            email: email
-          });
+  return fetch('https://randomuser.me/api/?results=5&seed=wdttm')
+  .then(response => response.json())
+  .then(data => {
+    const { results } = data;
+    
+    for (const { name, picture, email } of results) {
+      const {first, last} = name, {medium} = picture;
 
-          const staffID = staffInstance.id;
-          staffs[staffID] = staffInstance;
-        }
-        return staffs;
-      })
-      .catch((error) => console.log('Error fetching users: ', error))
-  );
+      JSObject[`${first}.${last}`] = {
+        picture: medium,
+        name: first,
+        surname: last,
+        email: email
+      }      
+    }
+    console.log('API Call and Fetch was successful')
+    return JSObject
+  })
+  .catch(error => console.log('Something went wrong', error))
 }
 
 // #endregion
@@ -37,8 +33,9 @@ export function fetchAdress(lat, lng) {
   return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
     .then((response) => response.json())
     .then((data) => {
-      const string = `${data.address.road} ${data.address.house_number}, ${data.address.postcode} ${data.address.city}, ${data.address.country}`;
-      return string;
+      const { address } = data;
+      const { road, house_number, postcode, city, country } = address
+      return `${road} ${house_number}, ${postcode} ${city}, ${country}`;
     })
     .catch((error) => {
       console.log('Something went wrong', error);

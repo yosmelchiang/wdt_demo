@@ -23,11 +23,22 @@ import { populateRow } from './utils/wdt_utility.js';
 
 const WDT_APP = {
   DOM: {}, // Object to store all DOM elements
-  EMPLOYEES: new Map(), // Store users and DOM elements
+
+  STAFFUSERS: {}, //Empty object, we are going to be filling this up with users from the api call.
+  DELIVERUSERS: {}, //Empty object, we are going to be filling this up with deliveries from manual input.
+  EMPLOYEES: new Map(), // Empty map, we are going to store both staff/delivery class instances in here and other useful data.
+
+  SETTINGS: {
+    userAmount: 5, //Amount of users get are getting from the randomuser API.
+    lateInterval: 1000 //Interval configuration for checking late employees. Set to 1 min
+  },
+
   DigitalClock: factory.createEmployee('time', new Date()), //Creating a date object for our Digital clock, using the Time class
+
   extraFeatures: true, // Set to true to enable extra features
 
-  init() {
+  //Since we are fetching users from an API call we need to define this operation as async to ensure we get a response from our call before we try to retrieve our JSOBject.
+  async init() {
     //DOM Elements
     this.getDOMElements();
 
@@ -36,62 +47,72 @@ const WDT_APP = {
 
     //Create Map
     this.EMPLOYEES.set('DOM Elements', {
-      toastContainer: this.DOM.toastContainer,
-      staffTableBody: this.DOM.staffTableBody,
-      deliveryTableBody: this.DOM.deliveryTableBody
+      toastContainer: this.DOM.ui.toastContainer, //This container is being passed to and being used by the staff class to create notifications
+      staffTableBody: this.DOM.staff.sTable,
+      deliveryTableBody: this.DOM.delivery.dTable
     });
 
-    //AddListeners
+    this.EMPLOYEES.set('Settings', {
+      lateInterval: this.SETTINGS.lateInterval
+    });
+
+    //Listeners
     this.addListeners();
 
-    //api fetch
-    this.staffUserGet();
+    //api call/fetch
+    await this.staffUserGet(); //wait for users to be fetched, return a Promise and populate our JSObject.
+
+    //create new user instances
+    this.createUser(); //then we run this to create new users and populate the DOM Table
 
     //extra features
-    this.eanbleExtraFeatures();
+    this.loadExtraFeatures();
   },
 
   getDOMElements() {
     console.log('DOM elements loaded');
 
     this.DOM = {
-      staffTable: document.getElementById('staff'), //Main table of staff members
-      staffTableBody: document.getElementById('staff').getElementsByTagName('tbody')[0],
-      inButton: document.getElementById('btn-in'),
-      outButton: document.getElementById('btn-out'),
-      scheduleDelivery: document.getElementById('schedule'),
-      scheduleVehicle: document.getElementById('schedule').getElementsByTagName('select'),
-      scheduleInputs: document.getElementById('schedule').getElementsByTagName('input'),
-      deliveryTable: document.getElementById('delivery'),
-      deliveryTableBody: document.getElementById('delivery').getElementsByTagName('tbody')[0],
-      addBtn: document.getElementById('btn-add'),
-      clearBtn: document.getElementById('btn-clear'),
-      clock: document.getElementById('dateAndTime'),
-      toastContainer: document.getElementsByClassName('toast-container')[0]
+      staff: {
+        sTable: document.getElementById('staff').getElementsByTagName('tbody')[0],
+        inBtn: document.getElementById('btn-in'),
+        outBtn: document.getElementById('btn-out')
+      },
+
+      schedule: {
+        vehicle: document.getElementById('schedule').getElementsByTagName('select'),
+        inputs: document.getElementById('schedule').getElementsByTagName('input')
+      },
+
+      delivery: {
+        dTable: document.getElementById('delivery').getElementsByTagName('tbody')[0],
+        addBtn: document.getElementById('btn-add'),
+        clearBtn: document.getElementById('btn-clear')
+      },
+
+      ui: {
+        clock: document.getElementById('dateAndTime'),
+        toastContainer: document.getElementsByClassName('toast-container')[0]
+      }
     };
   },
 
   digitalClock() {
-    console.log('digitalClock started');
-    this.DigitalClock.displayTime(this.DOM.clock);
+    const { ui } = this.DOM,
+      { clock } = ui;
+    this.DigitalClock.displayTime(clock);
   },
 
   addListeners() {
     console.log('Listeners added');
 
-    const {
-      inButton,
-      outButton,
-      addBtn,
-      clearBtn,
-      staffTableBody,
-      deliveryTableBody,
-      scheduleVehicle,
-      scheduleInputs
-    } = this.DOM;
+    const { staff, schedule, delivery } = this.DOM,
+      { outBtn, inBtn, sTable } = staff,
+      { vehicle, inputs } = schedule,
+      { dTable, addBtn, clearBtn } = delivery;
 
-    outButton.addEventListener('click', () => {
-      const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
+    outBtn.addEventListener('click', () => {
+      const selectedRows = sTable.getElementsByClassName('selectedRow');
       if (selectedRows.length > 0) {
         const rows = Array.from(selectedRows);
         staffOut(rows, this.EMPLOYEES);
@@ -100,8 +121,8 @@ const WDT_APP = {
       alert("You haven't selected any rows, please select one or more rows and try again.");
     });
 
-    inButton.addEventListener('click', () => {
-      const selectedRows = staffTableBody.getElementsByClassName('selectedRow');
+    inBtn.addEventListener('click', () => {
+      const selectedRows = sTable.getElementsByClassName('selectedRow');
       if (selectedRows.length > 0) {
         const rows = Array.from(selectedRows);
         staffIn(rows, this.EMPLOYEES);
@@ -111,8 +132,7 @@ const WDT_APP = {
     });
 
     addBtn.addEventListener('click', () => {
-      const { vehicle } = scheduleVehicle;
-      const { fname, lname, phone, adress, rtime } = scheduleInputs;
+      const { fname, lname, phone, adress, rtime } = inputs;
 
       const vehIcon =
         vehicle.value === 'Car'
@@ -132,13 +152,13 @@ const WDT_APP = {
       );
 
       //Clear the table values
-      for (const inputs of scheduleInputs) {
-        inputs.value = '';
+      for (const fields of inputs) {
+        fields.value = '';
       }
     });
 
     clearBtn.addEventListener('click', () => {
-      const selectedRow = deliveryTableBody.getElementsByClassName('selectedRow');
+      const selectedRow = dTable.getElementsByClassName('selectedRow');
 
       const rows = Array.from(selectedRow);
 
@@ -146,35 +166,48 @@ const WDT_APP = {
     });
   },
 
-  staffUserGet() {
-    getData()
-      .then((staffs) => {
-        const { staffTableBody } = this.DOM;
+  //Notes
+  //1. Call the API > Destructure and return an JSObject
+  //2. Use the Object to create class instances
+  //3. Store each instance in the Employee map
+  //4. populate DOM and enable Row selections
 
-        for (const staff in staffs) {
-          const staffID = staff;
-          const staffMember = staffs[staff];
+  
+  async staffUserGet() {
 
-          this.EMPLOYEES.set(staffID, staffMember);
-          populateRow(staffTableBody, staffMember, 'staff');
-        }
-        enableRowSelection(staffTableBody, 'staff');
-        console.log('Users fully fetched');
-      })
-      .catch((error) => console.log('Something went wrong', error));
+    await getData(this.STAFFUSERS) //We are passing our empty object to the API call to fill it up with users.
+    .then((results) => {
+      console.log('JSOBject created and stored in STAFFUSERS')
+      this.STAFFUSERS = results; // IF call was successful, we should be able to access these users now.
+    })
+    .catch(error => console.log('Something went wrong', error))
+  
+  },
+  
+  createUser() {
+    const { staff } = this.DOM, { sTable } = staff;
+    for(const item in this.STAFFUSERS) {
+      const staff = factory.createEmployee('staff', this.STAFFUSERS[item]);
+      const staffID = item
+      this.EMPLOYEES.set(staffID, staff)
+
+      //Update the DOM Staff table with newly created usres
+      populateRow(sTable, staff, 'staff')
+      enableRowSelection(sTable, 'staff')
+    }
   },
 
-  eanbleExtraFeatures() {
+  loadExtraFeatures() {
     if (this.extraFeatures) {
-      console.log('Extra features enabled');
+      console.log('Extra features loaded');
       enableMapFeatures(); //This function simply hides/shows current location and map icons from the DOM
       getLocation(); //Gets the current user location
       showPopover(); //Shows a little popover when focusing the adress input
       showMap(); //Allows the user to use the map to find an adress
-      formEnterKeyListener(this.DOM.addBtn); // This function will allow the ENTER key to submit to Delivery Board
+      formEnterKeyListener(this.DOM.delivery.addBtn); // This function will allow the ENTER key to submit to Delivery Board
     }
   }
 };
 
-window.addEventListener('load', () => WDT_APP.init());
+window.addEventListener('load', WDT_APP.init());
 // #endregion
