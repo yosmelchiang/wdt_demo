@@ -3,15 +3,14 @@
 import { getData } from './api/wdt_api.js'; // API Imports
 import { factory } from './classes/wdt_factory.js'; // Factory Pattern
 import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js'; /// Event Listeners
-import { getRowId, getUserDuration, populateRow } from './utils/wdt_utility.js'; // Utilities
+import { DOMUtils, getUserDuration } from './utils/wdt_utility.js'; // Utilities
 import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js'; // Extra features
 
 // #endregion
 
 // #region APP Initializaiton
-
 const WDT_APP = {
-  DOM: {}, // Object to store all DOM elements
+  DOM: DOMUtils.getDOMElements, // Object to store all DOM elements
 
   EMPLOYEES: new Map([
     ['staffs', {}],
@@ -32,16 +31,15 @@ const WDT_APP = {
   },
 
   //Since we are fetching users from an API call we need to define this operation as async to ensure we get a response from our call before we try to retrieve our JSOBject.
-  async init() {
+  async init () {
     console.log('Initializing app...');
-    //DOM Elements
-    this.getDOMElements();
+
+    //Checking if our DOM elements have loaded
+    console.log(Object.keys(this.DOM).length > 0 ? 'DOM Elements loaded':'Error while loading DOM elements')
 
     //Storing these specific elements to our Employee map
     this.EMPLOYEES.set('DOM Elements', {
       toastContainer: this.DOM.ui.toastContainer, //This container is being passed to and being used by the staff class to create notifications
-      staffTableBody: this.DOM.staff.sTable,
-      deliveryTableBody: this.DOM.delivery.dTable
     });
 
     //Start digital clock
@@ -60,33 +58,6 @@ const WDT_APP = {
     this.loadExtraFeatures();
   },
 
-  getDOMElements() {
-    console.log('DOM elements loaded');
-
-    this.DOM = {
-      staff: {
-        sTable: document.getElementById('staff').getElementsByTagName('tbody')[0],
-        inBtn: document.getElementById('btn-in'),
-        outBtn: document.getElementById('btn-out')
-      },
-
-      schedule: {
-        vehicle: document.getElementById('schedule').getElementsByTagName('select'),
-        inputs: document.getElementById('schedule').getElementsByTagName('input')
-      },
-
-      delivery: {
-        dTable: document.getElementById('delivery').getElementsByTagName('tbody')[0],
-        addBtn: document.getElementById('btn-add'),
-        clearBtn: document.getElementById('btn-clear')
-      },
-
-      ui: {
-        clock: document.getElementById('dateAndTime'),
-        toastContainer: document.getElementsByClassName('toast-container')[0]
-      }
-    };
-  },
 
   digitalClock() {
     const { ui } = this.DOM,
@@ -98,13 +69,13 @@ const WDT_APP = {
     console.log('Listeners added');
 
     const { staff, schedule, delivery } = this.DOM,
-      { outBtn, inBtn, sTable } = staff,
+      { outBtn, inBtn } = staff,
       { vehicle, inputs } = schedule,
       { addBtn, clearBtn } = delivery;
     const formInputs = { vehicle, inputs };
 
-    outBtn.addEventListener('click', () => this.staffOut(sTable));
-    inBtn.addEventListener('click', () => this.staffIn(sTable));
+    outBtn.addEventListener('click', () => this.staffOut());
+    inBtn.addEventListener('click', () => this.staffIn());
     addBtn.addEventListener('click', () => this.addDelivery(formInputs));
     clearBtn.addEventListener('click', () => this.clearDelivery());
   },
@@ -127,14 +98,14 @@ const WDT_APP = {
     for (const staff in this.staffs) {
       const newInstance = factory.createEmployee('staff', this.staffs[staff]); //Creating new class instances
       this.staffs[staff] = newInstance; //Here we are replacing the existing JSObject with Class instances in our map for OOP handling
-      populateRow(sTable, newInstance, 'staff'); //Populating the DOM table with the new instances
+      DOMUtils.populateStaff(newInstance); //Here we are populating the DOM
     }
     enableRowSelection(sTable, 'staff');
   },
 
   //Staff Management
-  staffOut(sTable) {
-    const selectedRows = sTable.getElementsByClassName('selectedRow');
+  staffOut() {
+    const selectedRows = this.DOM.staff.sTable.getElementsByClassName('selectedRow');
 
     if (selectedRows.length > 0) {
       const input = getUserDuration();
@@ -144,7 +115,7 @@ const WDT_APP = {
         if (input === null) {
           row.classList.remove('selectedRow');
         } else {
-          const staffID = getRowId(row);
+          const staffID = DOMUtils.getRowId(row);
           const time = factory.createEmployee('time', new Date());
           const outTime = time.currentTimeInHours();
           const duration = time.convertMinsToHours(input);
@@ -166,14 +137,14 @@ const WDT_APP = {
     alert('Please select one or more rows and try again.');
   },
 
-  staffIn(sTable) {
-    const selectedRows = sTable.getElementsByClassName('selectedRow');
+  staffIn() {
+    const selectedRows = this.DOM.staff.sTable.getElementsByClassName('selectedRow');
 
     if (selectedRows.length > 0) {
       const rows = Array.from(selectedRows);
 
       for (const row of rows) {
-        const staffID = getRowId(row);
+        const staffID = DOMUtils.getRowId(row);
 
         for (const staff in this.staffs) {
           if (staff === staffID) {
@@ -241,14 +212,14 @@ const WDT_APP = {
     // const instance = this.deliveries;
     if (errorMessage) {
       alert(errorMessage);
-      return;
     } else if (deliveryInstance.id in this.deliveries) {
       alert('This user already exists');
     } else {
       this.deliveries[deliveryInstance.id] = deliveryInstance;
       deliveryInstance.deliveryDriverIsLate(this.EMPLOYEES);
 
-      populateRow(dTable, deliveryInstance, 'delivery');
+      // populateRow(dTable, deliveryInstance, 'delivery');
+      DOMUtils.populateDeliveries(deliveryInstance)
       enableRowSelection(dTable, 'delivery');
 
       //Clear the table values
@@ -263,7 +234,7 @@ const WDT_APP = {
     if (selectedRows.length > 0) {
       const rows = Array.from(selectedRows);
       for (const row of rows) {
-        const deliveryID = getRowId(row);
+        const deliveryID = DOMUtils.getRowId(row);
         let message = `Are you sure you want to clear ${deliveryID.replace(
           '.',
           ' '
