@@ -172,13 +172,13 @@ buttons style: applied company rules to font type and background color.
   font-size: 20px;
   padding-left: 20px;
   padding-right: 20px;
-  transition: all 0.5s;
+  transition: all 0.2s;
 }
 
 .btn-confirm span {
   display: flex;
   position: relative;
-  transition: 0.5s;
+  transition: 0.2s;
 }
 
 /* We adding a checkmark to our span, which is initially hidden */
@@ -187,7 +187,7 @@ buttons style: applied company rules to font type and background color.
   position: absolute;
   opacity: 0;
   right: 0px;
-  transition: 0.5s;
+  transition: 0.2s;
 }
 
 .btn-confirm:hover span {
@@ -207,13 +207,13 @@ buttons style: applied company rules to font type and background color.
   font-size: 20px;
   padding-left: 20px;
   padding-right: 20px;
-  transition: all 0.5s;
+  transition: all 0.2s;
 }
 
 .btn-cancel span {
   display: flex;
   position: relative;
-  transition: 0.5s;
+  transition: 0.2s;
 }
 
 .btn-cancel span:before {
@@ -221,7 +221,7 @@ buttons style: applied company rules to font type and background color.
   position: absolute;
   opacity: 0;
   left: 0px;
-  transition: 0.5s;
+  transition: 0.2s;
 }
 
 .btn-cancel:hover span {

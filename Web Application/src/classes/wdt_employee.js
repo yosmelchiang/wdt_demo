@@ -4,5 +4,3 @@ export class Employee {
     this.surname = surname;
   }
 }
-
-

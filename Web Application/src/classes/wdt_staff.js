@@ -13,30 +13,28 @@ export class Staff extends Employee {
     this.expectedRTime = '';
   }
 
+  //Getters
   get id() {
     return `${this.name}.${this.surname}`;
   }
 
-  out(row, outTime, duration, expectedRTime) {
+  //Setters
+  set out(JSObject) {
     this.status = 'Out';
-    this.outTime = outTime;
-    this.duration = duration;
-    this.expectedRTime = expectedRTime;
-
-    updateDOM(row, this);
+    this.outTime = JSObject.outTime;
+    this.duration = JSObject.duration;
+    this.expectedRTime = JSObject.returnTime;
   }
 
-  in(row) {
+  set in(value) { //The value doesnt serve any purpose, but we need a value in a set accessor so we are just using a placeholder
     this.status = 'In';
     this.outTime = '';
     this.duration = '';
     this.expectedRTime = '';
-
-    updateDOM(row, this);
   }
 
+  //Methods
   staffMemberIsLate(EMPLOYEES) {
-    const { toastContainer } = EMPLOYEES.get('DOM Elements');
     const { lateInterval } = EMPLOYEES.get('config');
 
     const checkIfLate = setInterval(() => {
@@ -47,7 +45,6 @@ export class Staff extends Employee {
         if (late) {
           //Create toast notification data and message
           const toastData = {
-            container: toastContainer,
             id: this.id,
             picture: this.picture,
             name: this.name,
@@ -74,17 +71,17 @@ export class Staff extends Employee {
  * @param {DOM element} row - The current HTML DOM element.
  * @param {Class} instance - The current Class element.
  */
-function updateDOM(row, instance) {
-  if (instance.status === 'Out') {
-    row.cells[4].innerHTML = instance.status;
-    row.cells[5].innerHTML = instance.outTime;
-    row.cells[6].innerHTML = instance.duration;
-    row.cells[7].innerHTML = instance.expectedRTime;
-  } else {
-    row.cells[4].innerHTML = instance.status;
-    row.cells[5].innerHTML = '';
-    row.cells[6].innerHTML = '';
-    row.cells[7].innerHTML = '';
-  }
-}
+// function updateDOM(row, instance) {
+//   if (instance.status === 'Out') {
+//     row.cells[4].innerHTML = instance.status;
+//     row.cells[5].innerHTML = instance.outTime;
+//     row.cells[6].innerHTML = instance.duration;
+//     row.cells[7].innerHTML = instance.expectedRTime;
+//   } else {
+//     row.cells[4].innerHTML = instance.status;
+//     row.cells[5].innerHTML = '';
+//     row.cells[6].innerHTML = '';
+//     row.cells[7].innerHTML = '';
+//   }
+// }
 // #endregion

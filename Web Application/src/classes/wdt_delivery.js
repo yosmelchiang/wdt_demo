@@ -17,7 +17,6 @@ export class Delivery extends Employee {
   }
 
   deliveryDriverIsLate(EMPLOYEES) {
-    const { toastContainer } = EMPLOYEES.get('DOM Elements');
     const { lateInterval } = EMPLOYEES.get('config');
     const deliveries = EMPLOYEES.get('deliveries');
 
@@ -30,7 +29,6 @@ export class Delivery extends Employee {
         if (late) {
           //Create toast notification data and message
           const toastData = {
-            container: toastContainer,
             id: deliveryID,
             name: this.name,
             surname: this.surname,

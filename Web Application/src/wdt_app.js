@@ -1,21 +1,26 @@
 // #region IMPORTS
 
-import { getData } from './api/wdt_api.js'; // API Imports
+import { fetchUserData } from './api/wdt_api.js'; // API Imports
 import { factory } from './classes/wdt_factory.js'; // Factory Pattern
-import { enableRowSelection, formEnterKeyListener } from './events/wdt_event.js'; /// Event Listeners
-import { DOMUtils, getUserDuration } from './utils/wdt_utility.js'; // Utilities
-import { enableMapFeatures, getLocation, showMap, showPopover } from './components/wdt_map.js'; // Extra features
+import { DOMInterface, DOMUtils, MapFeatures } from './utils/wdt_utility.js'; // Utilities
 
 // #endregion
 
 // #region APP Initializaiton
 const WDT_APP = {
-  DOM: DOMUtils.getDOMElements, // Object to store all DOM elements
+  DOM: null, // Property to store all DOM elements
 
   EMPLOYEES: new Map([
     ['staffs', {}],
     ['deliveries', {}],
-    ['config', { users: 5, seed: 'wdtnoroff', lateInterval: 60000 }]
+    [
+      'config',
+      {
+        users: 5,
+        seed: 'wdtnoroff',
+        lateInterval: 1000
+      }
+    ]
   ]), // EMPLOYEE map, we are going to store both staff/delivery class instances in here and other useful data to be used across the app.
 
   DigitalClock: factory.createEmployee('time', new Date()), //Creating a date object for our Digital clock, using the Time class
@@ -31,33 +36,32 @@ const WDT_APP = {
   },
 
   //Since we are fetching users from an API call we need to define this operation as async to ensure we get a response from our call before we try to retrieve our JSOBject.
-  async init () {
+  async init() {
     console.log('Initializing app...');
 
+    //Getting DOM Elements
+    this.DOM = DOMUtils.getDOMElements;
+
     //Checking if our DOM elements have loaded
-    console.log(Object.keys(this.DOM).length > 0 ? 'DOM Elements loaded':'Error while loading DOM elements')
-
-    //Storing these specific elements to our Employee map
-    this.EMPLOYEES.set('DOM Elements', {
-      toastContainer: this.DOM.ui.toastContainer, //This container is being passed to and being used by the staff class to create notifications
-    });
-
-    //Start digital clock
-    this.digitalClock();
+    console.log(
+      Object.keys(this.DOM).length > 0 ? 'DOM Elements loaded' : 'Error while loading DOM elements'
+    );
 
     //Listeners
     this.addListeners();
 
-    //api call/fetch
+    //API call/fetch
     await this.staffUserGet(); //wait for users to be fetched, return a Promise and populate our JSObject.
 
     //create new user instances
     this.createUser(); //then we run this to create new users and populate the DOM Table
 
+    //Start digital clock
+    this.digitalClock();
+
     //extra features
     this.loadExtraFeatures();
   },
-
 
   digitalClock() {
     const { ui } = this.DOM,
@@ -87,7 +91,7 @@ const WDT_APP = {
   //4. populate DOM and enable Row selections
 
   async staffUserGet() {
-    await getData(this.EMPLOYEES) //Fills up the 'staffs' key in the EMPLOYEES map
+    await fetchUserData(this.EMPLOYEES) //Fills up the 'staffs' key in the EMPLOYEES map
       .catch((error) => console.log('Something went wrong', error));
   },
 
@@ -100,7 +104,7 @@ const WDT_APP = {
       this.staffs[staff] = newInstance; //Here we are replacing the existing JSObject with Class instances in our map for OOP handling
       DOMUtils.populateStaff(newInstance); //Here we are populating the DOM
     }
-    enableRowSelection(sTable, 'staff');
+    DOMUtils.enableStaffSelection;
   },
 
   //Staff Management
@@ -108,7 +112,7 @@ const WDT_APP = {
     const selectedRows = this.DOM.staff.sTable.getElementsByClassName('selectedRow');
 
     if (selectedRows.length > 0) {
-      const input = getUserDuration();
+      const input = DOMInterface.getDuration;
       const rows = Array.from(selectedRows);
 
       for (const row of rows) {
@@ -117,16 +121,17 @@ const WDT_APP = {
         } else {
           const staffID = DOMUtils.getRowId(row);
           const time = factory.createEmployee('time', new Date());
-          const outTime = time.currentTimeInHours();
+          const outTime = time.currentTimeInHours;
           const duration = time.convertMinsToHours(input);
           const returnTime = time.addTime(input);
 
           for (const staff in this.staffs) {
             if (staff === staffID) {
               const staffInstance = this.staffs[staff];
-
-              staffInstance.out(row, outTime, duration, returnTime);
               staffInstance.staffMemberIsLate(this.EMPLOYEES);
+              staffInstance.out = { row, outTime, duration, returnTime };
+
+              DOMUtils.updateStaff = { row, staffInstance };
             }
           }
           row.classList.remove('selectedRow');
@@ -149,7 +154,8 @@ const WDT_APP = {
         for (const staff in this.staffs) {
           if (staff === staffID) {
             const staffInstance = this.staffs[staff];
-            staffInstance.in(row);
+            staffInstance.in = {}; //Need to pass a value to trigger the set accessor, so we are passing an empty object.
+            DOMUtils.updateStaff = { row, staffInstance };
           }
         }
         row.classList.remove('selectedRow');
@@ -166,7 +172,7 @@ const WDT_APP = {
 
     const time = factory.createEmployee('time', new Date());
     const inputTime = time.convertHoursToMins(expectedRTime);
-    const currentTime = time.currentTimeInMins();
+    const currentTime = time.currentTimeInMins;
 
     const invalidName = name.trim() === '' || !isNaN(name);
     const invalidSurname = surname.trim() === '' || !isNaN(surname);
@@ -192,7 +198,6 @@ const WDT_APP = {
   addDelivery(formInputs) {
     const { vehicle, inputs } = formInputs;
     const { fname, lname, phone, adress, rtime } = inputs;
-    const dTable = this.DOM.delivery.dTable;
 
     const vehIcon =
       vehicle.value === 'Car'
@@ -212,15 +217,14 @@ const WDT_APP = {
     // const instance = this.deliveries;
     if (errorMessage) {
       alert(errorMessage);
-    } else if (deliveryInstance.id in this.deliveries) {
-      alert('This user already exists');
+    } else if (deliveryInstance.id in this.deliveries || deliveryInstance.id in this.staffs) {
+      alert(`${deliveryInstance.id.replace('.', ' ')} is already in the system.`);
     } else {
       this.deliveries[deliveryInstance.id] = deliveryInstance;
       deliveryInstance.deliveryDriverIsLate(this.EMPLOYEES);
 
-      // populateRow(dTable, deliveryInstance, 'delivery');
-      DOMUtils.populateDeliveries(deliveryInstance)
-      enableRowSelection(dTable, 'delivery');
+      DOMUtils.populateDeliveries(deliveryInstance);
+      DOMUtils.enableDeliverySelection;
 
       //Clear the table values
       for (const fields of inputs) {
@@ -253,11 +257,11 @@ const WDT_APP = {
   loadExtraFeatures() {
     if (this.extraFeatures) {
       console.log('Extra features loaded');
-      enableMapFeatures(); //This function simply hides/shows current location and map icons from the DOM
-      getLocation(); //Gets the current user location
-      showPopover(); //Shows a little popover when focusing the adress input
-      showMap(); //Allows the user to use the map to find an adress
-      formEnterKeyListener(this.DOM.delivery.addBtn); // This function will allow the ENTER key to submit to Delivery Board
+
+      MapFeatures.init();
+      DOMUtils.enableEnterKeySubmit; // Allows the ENTER key to submit to Delivery Board
+
+      // showPopover(); //Shows a little popover when focusing the adress input
     }
   }
 };
