@@ -1,8 +1,6 @@
 import { Employee } from './wdt_employee.js';
 import { factory } from './wdt_factory.js';
 
-// #region DELIVERY CLASS
-
 export class Delivery extends Employee {
   constructor(JSObject) {
     super(JSObject.name, JSObject.surname); //Inherit name and surname from Employee
@@ -49,5 +47,3 @@ export class Delivery extends Employee {
     return checkIfLate;
   }
 }
-
-// #endregion

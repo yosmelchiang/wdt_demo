@@ -1,12 +1,7 @@
-// #region IMPORTS
-
 import { fetchUserData } from './api/wdt_api.js'; // API Imports
 import { factory } from './classes/wdt_factory.js'; // Factory Pattern
 import { DOMInterface, DOMUtils, MapFeatures } from './utils/wdt_utility.js'; // Utilities
 
-// #endregion
-
-// #region APP Initializaiton
 const WDT_APP = {
   DOM: null, // Property to store all DOM elements
 
@@ -40,12 +35,8 @@ const WDT_APP = {
     console.log('Initializing app...');
 
     //Getting DOM Elements
-    this.DOM = DOMUtils.getDOMElements;
-
-    //Checking if our DOM elements have loaded
-    console.log(
-      Object.keys(this.DOM).length > 0 ? 'DOM Elements loaded' : 'Error while loading DOM elements'
-    );
+    DOMUtils.init();
+    this.DOM = DOMUtils.DOM;
 
     //Listeners
     this.addListeners();
@@ -70,7 +61,7 @@ const WDT_APP = {
   },
 
   addListeners() {
-    console.log('Listeners added');
+    console.log('APP: Listeners added');
 
     const { staff, schedule, delivery } = this.DOM,
       { outBtn, inBtn } = staff,
@@ -96,23 +87,20 @@ const WDT_APP = {
   },
 
   createUser() {
-    const { staff } = this.DOM,
-      { sTable } = staff;
-
     for (const staff in this.staffs) {
       const newInstance = factory.createEmployee('staff', this.staffs[staff]); //Creating new class instances
       this.staffs[staff] = newInstance; //Here we are replacing the existing JSObject with Class instances in our map for OOP handling
       DOMUtils.populateStaff(newInstance); //Here we are populating the DOM
     }
-    DOMUtils.enableStaffSelection;
+    DOMUtils.enableStaffSelection();
   },
 
   //Staff Management
-  staffOut() {
+  async staffOut() {
     const selectedRows = this.DOM.staff.sTable.getElementsByClassName('selectedRow');
 
     if (selectedRows.length > 0) {
-      const input = DOMInterface.getDuration;
+      const input = await DOMInterface.getDuration();
       const rows = Array.from(selectedRows);
 
       for (const row of rows) {
@@ -214,7 +202,6 @@ const WDT_APP = {
     });
 
     const errorMessage = this.validate(deliveryInstance);
-    // const instance = this.deliveries;
     if (errorMessage) {
       alert(errorMessage);
     } else if (deliveryInstance.id in this.deliveries || deliveryInstance.id in this.staffs) {
@@ -224,7 +211,7 @@ const WDT_APP = {
       deliveryInstance.deliveryDriverIsLate(this.EMPLOYEES);
 
       DOMUtils.populateDeliveries(deliveryInstance);
-      DOMUtils.enableDeliverySelection;
+      DOMUtils.enableDeliverySelection();
 
       //Clear the table values
       for (const fields of inputs) {
@@ -256,15 +243,10 @@ const WDT_APP = {
 
   loadExtraFeatures() {
     if (this.extraFeatures) {
-      console.log('Extra features loaded');
-
       MapFeatures.init();
-      DOMUtils.enableEnterKeySubmit; // Allows the ENTER key to submit to Delivery Board
-
-      // showPopover(); //Shows a little popover when focusing the adress input
+      DOMUtils.enableEnterKeySubmit(); // Allows the ENTER key to submit to Delivery Board
     }
   }
 };
 
 window.addEventListener('load', WDT_APP.init());
-// #endregion

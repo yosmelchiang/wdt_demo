@@ -1,5 +1,3 @@
-// #region API Calls
-
 export function fetchUserData(JSObject) {
 const staffs = JSObject.get('staffs') //Reference to the actual object stored under staffs in the Employee map
 const { users, seed } = JSObject.get('config')
@@ -39,21 +37,3 @@ export function fetchAdressFromCoords(JSOBject) {
     })
     .catch((error) => console.log('Something went wrong', error));
 };
-
-// #endregion
-
-// #region Fetch current location adress (Additional feature)
-// export function fetchAdress(lat, lng) {
-//   return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-//     .then((response) => response.json())
-//     .then((data) => {
-//       console.log('data:', data)
-//       const { address } = data;
-//       const { road, house_number, postcode, city, country } = address
-//       return `${road} ${house_number}, ${postcode} ${city}, ${country}`;
-//     })
-//     .catch((error) => {
-//       console.log('Something went wrong', error);
-//     });
-// }
-// #endregion

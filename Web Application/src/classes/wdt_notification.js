@@ -1,4 +1,5 @@
-import { DOMUtils } from '../utils/wdt_utility.js';
+import { DOMInterface, DOMUtils } from '../utils/wdt_utility.js';
+
 class Notification {
   constructor(JSObject) {
     this.container = DOMUtils.getDOMElements.ui.toastContainer;
@@ -17,24 +18,27 @@ class Notification {
 
   Notify() {
     const div = DOMUtils.createDiv;
+
+    div.setAttribute('id', this.id);
+    div.setAttribute('class', 'toast text-bg-danger');
+    div.setAttribute('role', 'alert');
+    div.setAttribute('aria-live', 'assertive');
+    div.setAttribute('aria-atomic', 'true');
+    div.setAttribute('data-bs-autohide', 'false');
+
     div.innerHTML = `
-      <div id="${
-        this.id
-      }" class="toast text-bg-danger role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
         <div class="toast-header text-bg-danger border-0">
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body">
           ${this.content()}
         </div>
-      </div>
     `;
     this.container.appendChild(div);
-    DOMUtils.createToast(this.id);
+    DOMInterface.createToast(this.id);
   }
 }
 
-// #region Staff Notification
 export class StaffNotification extends Notification {
   constructor(JSObject) {
     super(JSObject);
@@ -49,9 +53,7 @@ export class StaffNotification extends Notification {
     `;
   }
 }
-// #endregion
 
-// #region Delivery Notification
 export class DeliveryNotification extends Notification {
   constructor(JSObject) {
     super(JSObject);
@@ -70,16 +72,3 @@ export class DeliveryNotification extends Notification {
   `;
   }
 }
-
-export class SystemNotification extends Notification {
-  constructor(JSObject) {
-    super(JSObject);
-  }
-
-  content() {
-    return `
-    whatever
-    `
-  }
-}
-// #endregion

@@ -1,19 +1,19 @@
 import { fetchAdressFromCoords } from '../api/wdt_api.js';
 
 export const DOMInterface = {
+  popover: null,
+
   //Getters
-  get getDuration() {
+  async getDuration() {
     while (true) {
-      const input = prompt('Please enter the number of minutes the staff member will be out:');
+      const input = await this.customPrompt(
+        'Please enter the number of minutes the staff member will be out'
+      );
 
       if (input === null) {
         return null; //Return null back to staffOut if the user cancels
       }
-      if (!this.isInvalidDuration(input)) {
-        return parseInt(input);
-      } else {
-        alert('Invalid input, try again');
-      }
+      return parseInt(input);
     }
   },
 
@@ -23,19 +23,79 @@ export const DOMInterface = {
       return true;
     }
     return input.trim() === '' || isNaN(input) || input <= 0;
+  },
+
+  createToast(id) {
+    const toastWindow = document.getElementById(`${id}`);
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
+    toastBootstrap.show();
+
+    toastWindow.addEventListener('hidden.bs.toast', () => {
+      toastWindow.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+    });
+  },
+
+  customPrompt(message) {
+    return new Promise((resolve) => {
+      const { promptContainer, promptSubmit, promptCancel, promptField } = DOMUtils.DOM.ui;
+
+      const prompt = new bootstrap.Modal(promptContainer)
+      document.getElementById('customPromptLabel').innerText = message;
+
+      prompt.show();
+
+      const submitPrompt = () => {
+        const userInput = promptField.value;
+        if (!this.isInvalidDuration(userInput)) {
+          promptSubmit.removeEventListener('click', submitPrompt);
+          prompt.hide();
+          resolve(userInput);
+          promptField.value = '';
+        } else {
+          alert('Invalid input, try again');
+          promptField.value = '';
+        }
+      };
+
+      const cancelPrompt = () => {
+        prompt.hide();
+        resolve(null);
+      }
+
+      promptSubmit.addEventListener('click', submitPrompt);
+      promptCancel.addEventListener('click', cancelPrompt);
+
+      promptContainer.addEventListener('hidden.bs.modal', () => {
+        resolve(null);
+      })
+
+    });
+  },
+
+  createPopOver(element) {
+    const popover = new bootstrap.Popover(element, {
+      trigger: 'manual', // We'll control when it shows and hides
+      content: ``
+    });
+
+    return popover;
   }
 };
 
 export const DOMUtils = {
+  DOM: null,
+
+  init() {
+    //GET DOM elements
+    this.DOM = this.getDOMElements;
+    console.log(
+      Object.keys(this.DOM).length > 0
+        ? 'DOM: Elements successfully loaded'
+        : 'Error while loading DOM elements'
+    );
+  },
+
   //Getters
-  get createDiv() {
-    return document.createElement('div');
-  },
-
-  get createRow() {
-    return document.createElement('tr');
-  },
-
   get getDOMElements() {
     return {
       staff: {
@@ -58,45 +118,21 @@ export const DOMUtils = {
       ui: {
         clock: document.getElementById('dateAndTime'),
         toastContainer: document.getElementsByClassName('toast-container')[0],
-        formInputs: document.querySelectorAll('#schedule input')
+        formInputs: document.querySelectorAll('#schedule input'),
+        promptContainer: document.getElementById('customPrompt'),
+        promptSubmit: document.getElementById('modalSubmit'),
+        promptCancel: document.getElementById('modalCancel'),
+        promptField: document.getElementById('modalInput')
       }
     };
   },
 
-  get enableStaffSelection() {
-    const rows = this.getDOMElements.staff.sTable.getElementsByTagName('tr');
-    for (const row of rows) {
-      row.addEventListener('click', function () {
-        this.classList.toggle('selectedRow');
-      });
-    }
+  get createDiv() {
+    return document.createElement('div');
   },
 
-  get enableDeliverySelection() {
-    const rows = this.getDOMElements.delivery.dTable.getElementsByTagName('tr');
-    for (const row of rows) {
-      const isDelivery = row.hasAttribute('deliveryRow'); //New rows wont have this attribute, so we set it
-      if (!isDelivery) {
-        //Should be false, meaning we enter this code block
-        row.addEventListener('click', function () {
-          //a newly created row as been clicked, so we add the class to it
-          this.classList.toggle('selectedRow');
-        });
-      }
-      row.setAttribute('deliveryRow', 'true');
-    }
-  },
-
-  get enableEnterKeySubmit() {
-    const formInputs = this.getDOMElements.ui.formInputs;
-    const addBtn = this.getDOMElements.delivery.addBtn;
-    for (const input of formInputs) {
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          addBtn.click();
-        }
-      });
-    }
+  get createRow() {
+    return document.createElement('tr');
   },
 
   //Setters
@@ -112,6 +148,42 @@ export const DOMUtils = {
   },
 
   //Methods
+  enableStaffSelection() {
+    const rows = this.getDOMElements.staff.sTable.getElementsByTagName('tr');
+    for (const row of rows) {
+      row.addEventListener('click', function () {
+        this.classList.toggle('selectedRow');
+      });
+    }
+  },
+
+  enableDeliverySelection() {
+    const rows = this.getDOMElements.delivery.dTable.getElementsByTagName('tr');
+    for (const row of rows) {
+      const isDelivery = row.hasAttribute('deliveryRow'); //New rows wont have this attribute, so we set it
+      if (!isDelivery) {
+        //Should be false, meaning we enter this code block
+        row.addEventListener('click', function () {
+          //a newly created row as been clicked, so we add the class to it
+          this.classList.toggle('selectedRow');
+        });
+      }
+      row.setAttribute('deliveryRow', 'true');
+    }
+  },
+
+  enableEnterKeySubmit() {
+    const formInputs = this.getDOMElements.ui.formInputs;
+    const addBtn = this.getDOMElements.delivery.addBtn;
+    for (const input of formInputs) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          addBtn.click();
+        }
+      });
+    }
+  },
+
   getRowId(row) {
     const name = row.getElementsByTagName('td')[1].innerText;
     const surname = row.getElementsByTagName('td')[2].innerText;
@@ -154,18 +226,6 @@ export const DOMUtils = {
       `;
     }
     dTable.appendChild(row);
-  },
-
-  createToast(id) {
-    const div = this.createDiv;
-
-    const toastWindow = document.getElementById(`${id}`);
-    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
-    toastBootstrap.show();
-
-    toastWindow.addEventListener('hidden.bs.toast', () => {
-      div.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
-    });
   }
 };
 
@@ -178,25 +238,17 @@ export const MapFeatures = {
     //Check if DOM elements have loaded
     this.DOM = this.getDOMElements;
     console.log(
-      Object.keys(this.DOM).length > 0 ? 'Map features loaded' : 'Map features not loaded'
+      Object.keys(this.DOM).length > 0 ? 'Map: features loaded' : 'Map: features not loaded'
     );
 
     //Enable map buttons
-    this.mapButtons;
+    this.mapButtons();
 
     //Listeners
-    this.listeners;
+    this.addListeners();
 
     //Create a popover
-    this.popover = new bootstrap.Popover(this.DOM.adressInput, {
-      trigger: 'manual', // We'll control when it shows and hides
-      content: `
-        <div>
-          Use the <i class="bi bi-crosshair"></i> button to autofill your adress<br>
-          Use the <i class="bi bi-globe2"></i> button to type in and find it manually.
-        </div>
-      `
-    });
+    this.popover = DOMInterface.createPopOver(this.DOM.adressInput);
   },
 
   //Getters
@@ -210,11 +262,12 @@ export const MapFeatures = {
     };
   },
 
-  get listeners() {
+  //Methods
+  addListeners() {
     const { mapBtn, locBtn, adressInput } = this.DOM;
 
-    locBtn.addEventListener('click', () => this.getUserLocation);
-    mapBtn.addEventListener('click', () => this.getMap);
+    locBtn.addEventListener('click', () => this.getUserLocation());
+    mapBtn.addEventListener('click', () => this.getMap());
     adressInput.addEventListener('focus', () => {
       this.popover.show();
     });
@@ -223,7 +276,7 @@ export const MapFeatures = {
     });
   },
 
-  get mapButtons() {
+  mapButtons() {
     const { locBtn, mapBtn } = this.DOM;
     if (locBtn.style.display === 'none' || mapBtn.style.display === 'none') {
       locBtn.style.display = 'inline';
@@ -231,7 +284,7 @@ export const MapFeatures = {
     }
   },
 
-  get getUserLocation() {
+  getUserLocation() {
     const { adressInput } = this.DOM;
 
     navigator.geolocation.getCurrentPosition((position) => {
@@ -242,7 +295,7 @@ export const MapFeatures = {
     });
   },
 
-  get getMap() {
+  getMap() {
     const { mapDiv } = this.DOM;
 
     if (mapDiv.style.display === 'flex') {
@@ -265,12 +318,12 @@ export const MapFeatures = {
 
         this.mapInstance.invalidateSize(); //Since we are hiding/showing our map, this will ensure proper recalculation of map size
 
-        this.GeoSearch;
+        this.GeoSearch();
       }
     }
   },
 
-  get GeoSearch() {
+  GeoSearch() {
     const { adressInput } = this.DOM;
 
     const search = new GeoSearch.GeoSearchControl({
@@ -306,7 +359,7 @@ export const MapFeatures = {
           useAdressBtn.addEventListener('click', () => {
             fetchAdressFromCoords({ latitude, longitude }).then((data) => {
               adressInput.value = data; // Plots in the adress into the form input
-              this.getMap; //Closes the map
+              this.getMap(); //Closes the map
             });
           });
         }

@@ -1,7 +1,6 @@
 import { Employee } from './wdt_employee.js';
 import { factory } from './wdt_factory.js';
 
-// #region STAFF CLASS
 export class Staff extends Employee {
   constructor(JSObject) {
     super(JSObject.name, JSObject.surname);
@@ -64,24 +63,4 @@ export class Staff extends Employee {
     return checkIfLate;
   }
 }
-// #endregion
 
-/**
- *
- * @param {DOM element} row - The current HTML DOM element.
- * @param {Class} instance - The current Class element.
- */
-// function updateDOM(row, instance) {
-//   if (instance.status === 'Out') {
-//     row.cells[4].innerHTML = instance.status;
-//     row.cells[5].innerHTML = instance.outTime;
-//     row.cells[6].innerHTML = instance.duration;
-//     row.cells[7].innerHTML = instance.expectedRTime;
-//   } else {
-//     row.cells[4].innerHTML = instance.status;
-//     row.cells[5].innerHTML = '';
-//     row.cells[6].innerHTML = '';
-//     row.cells[7].innerHTML = '';
-//   }
-// }
-// #endregion
