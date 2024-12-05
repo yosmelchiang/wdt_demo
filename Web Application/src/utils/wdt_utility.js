@@ -25,6 +25,31 @@ export const DOMInterface = {
     return input.trim() === '' || isNaN(input) || input <= 0;
   },
 
+  validateDelivery(instance) {
+    const { name, surname, phone, adress, expectedRTime } = instance;
+    let errorMessage = '';
+
+    const invalidName = name.trim() === '' || !isNaN(name);
+    const invalidSurname = surname.trim() === '' || !isNaN(surname);
+    const invalidPhone = phone.trim() === ''; //We dont need to validate if its a number as the HTML input type (Number) validates this for us
+    const invalidAdress = adress.trim() === '';
+    const invalidReturnTime = expectedRTime.trim() === ''
+
+    if (invalidName) {
+      errorMessage = 'Name cannot be a number or empty.';
+    } else if (invalidSurname) {
+      errorMessage = 'Surname cannot be a number or empty.';
+    } else if (invalidPhone) {
+      errorMessage = 'Phone cannot be empty.';
+    } else if (invalidAdress) {
+      errorMessage = 'Adress cannot be empty';
+    } else if (invalidReturnTime) {
+      errorMessage = 'Return time cannot back in time or empty';
+    }
+
+    return errorMessage;
+  },
+
   createToast(id) {
     const toastWindow = document.getElementById(`${id}`);
     const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);

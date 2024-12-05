@@ -29,7 +29,7 @@ const WDT_APP = {
   get deliveries() {
     return this.EMPLOYEES.get('deliveries');
   },
-
+l
   //Since we are fetching users from an API call we need to define this operation as async to ensure we get a response from our call before we try to retrieve our JSOBject.
   async init() {
     console.log('Initializing app...');
@@ -153,36 +153,6 @@ const WDT_APP = {
     alert('Please select one or more rows and try again.');
   },
 
-  //Delivery Management
-  validate(form) {
-    const { name, surname, phone, adress, expectedRTime } = form;
-    let errorMessage = '';
-
-    const time = factory.createEmployee('time', new Date());
-    const inputTime = time.convertHoursToMins(expectedRTime);
-    const currentTime = time.currentTimeInMins;
-
-    const invalidName = name.trim() === '' || !isNaN(name);
-    const invalidSurname = surname.trim() === '' || !isNaN(surname);
-    const invalidPhone = phone.trim() === ''; //We dont need to validate if its a number as the HTML input type (Number) validates this for us
-    const invalidAdress = adress.trim() === '';
-    const invalidReturnTime = expectedRTime.trim() === '' || inputTime < currentTime;
-
-    if (invalidName) {
-      errorMessage = 'Name cannot be a number or empty.';
-    } else if (invalidSurname) {
-      errorMessage = 'Surname cannot be a number or empty.';
-    } else if (invalidPhone) {
-      errorMessage = 'Phone cannot be empty.';
-    } else if (invalidAdress) {
-      errorMessage = 'Adress cannot be empty';
-    } else if (invalidReturnTime) {
-      errorMessage = 'Return time cannot back in time or empty';
-    }
-
-    return errorMessage;
-  },
-
   addDelivery(formInputs) {
     const { vehicle, inputs } = formInputs;
     const { fname, lname, phone, adress, rtime } = inputs;
@@ -201,9 +171,11 @@ const WDT_APP = {
       expectedRTime: rtime.value
     });
 
-    const errorMessage = this.validate(deliveryInstance);
+    const errorMessage = DOMInterface.validateDelivery(deliveryInstance);
+
     if (errorMessage) {
       alert(errorMessage);
+      return;
     } else if (deliveryInstance.id in this.deliveries || deliveryInstance.id in this.staffs) {
       alert(`${deliveryInstance.id.replace('.', ' ')} is already in the system.`);
     } else {
