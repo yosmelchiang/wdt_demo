@@ -1,5 +1,5 @@
 import { Delivery } from './wdt_delivery.js';
-import { DeliveryNotification, StaffNotification } from './wdt_notification.js';
+import { DeliveryNotification, StaffNotification, SystemNotification } from './wdt_notification.js';
 import { Staff } from './wdt_staff.js';
 import { Time } from './wdt_time.js';
 
@@ -23,6 +23,8 @@ class EmployeeFactory {
           return new StaffNotification(object)
         case 'deliveryNotification':
           return new DeliveryNotification(object)
+        case 'systemNotification':
+          return new SystemNotification(object)
         default:
           throw new Error(`Unknown type: ${type}`)
       }

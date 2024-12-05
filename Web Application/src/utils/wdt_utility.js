@@ -1,20 +1,16 @@
 import { fetchAdressFromCoords } from '../api/wdt_api.js';
 
 export const DOMInterface = {
-  popover: null,
-
   //Getters
   async getDuration() {
-    while (true) {
-      const input = await this.customPrompt(
-        'Please enter the number of minutes the staff member will be out'
-      );
+    const input = await this.customPrompt( {
+      message: 'Please enter the number of minutes the staff member will be out',
+      validateInput: (input) => !this.isInvalidDuration(input),
+      onInvalidInput: () => alert('Invalid duration, please try again'),
+      placeholder: 'Enter minutes'
 
-      if (input === null) {
-        return null; //Return null back to staffOut if the user cancels
-      }
-      return parseInt(input);
-    }
+    })
+    return input !== null ? parseInt(input) : null;
   },
 
   //Methods
@@ -33,7 +29,7 @@ export const DOMInterface = {
     const invalidSurname = surname.trim() === '' || !isNaN(surname);
     const invalidPhone = phone.trim() === ''; //We dont need to validate if its a number as the HTML input type (Number) validates this for us
     const invalidAdress = adress.trim() === '';
-    const invalidReturnTime = expectedRTime.trim() === ''
+    const invalidReturnTime = expectedRTime.trim() === '';
 
     if (invalidName) {
       errorMessage = 'Name cannot be a number or empty.';
@@ -60,50 +56,93 @@ export const DOMInterface = {
     });
   },
 
-  customPrompt(message) {
+  customPrompt( {
+    message,
+    validateInput = null,
+    onInvalidInput = null,
+    placeholder = '',
+    submitLabel = 'Submit',
+    cancelLabel = 'Cancel'
+  }) {
     return new Promise((resolve) => {
-      const { promptContainer, promptSubmit, promptCancel, promptField } = DOMUtils.DOM.ui;
+      //DOM elements
+      const { promptContainer, promptSubmit, promptCancel, promptField, promptBody } = DOMUtils.DOM.ui;
 
-      const prompt = new bootstrap.Modal(promptContainer)
+      //Creatong a bootstrap modal
+      const prompt = new bootstrap.Modal(promptContainer, {
+        backdrop: 'static', //prevents closing when clicking outside of the modal
+        keyboard: false //Disabling pressing the ESC button to close the modal
+      });
+
+      //Setting up the UI elements
       document.getElementById('customPromptLabel').innerText = message;
+      promptField.placeholder = placeholder;
+      promptSubmit.innerText = submitLabel;
+      promptCancel.innerText = cancelLabel;
 
+      //Disable promptField if no input is needed (confirmation mode)
+      if(!validateInput) {
+        promptBody.style.display = 'none' //Hide the field
+        promptField.style.display = 'none' //Hide the field
+      } else {
+        promptBody.style.display = ''; //Show the field
+        promptField.style.display = ''; //Show the field
+      }
+
+      //Showing the modal
       prompt.show();
 
       const submitPrompt = () => {
         const userInput = promptField.value;
-        if (!this.isInvalidDuration(userInput)) {
-          promptSubmit.removeEventListener('click', submitPrompt);
-          prompt.hide();
-          resolve(userInput);
-          promptField.value = '';
+        
+        if(validateInput) {
+          if(validateInput(userInput)) {
+            clear();
+            resolve(userInput);
+          } else if(onInvalidInput){
+            onInvalidInput(userInput); //Call invalid input if needed
+            promptField.value = ''; //Clear the inputs
+          } 
         } else {
-          alert('Invalid input, try again');
-          promptField.value = '';
+          clear();
+          resolve(true); //For comfirmation prompts
         }
       };
 
       const cancelPrompt = () => {
-        prompt.hide();
+        clear();
         resolve(null);
+      };
+
+      //Clear and remove listeners
+      const clear = () => {
+        promptSubmit.removeEventListener('click', submitPrompt);
+        promptCancel.removeEventListener('click', cancelPrompt);
+        promptContainer.removeEventListener('hidden.bs.modal', clear)
+        promptField.value= ''; //Reset input
+        prompt.hide();
+
+        const backdrop = document.querySelector('.modal-backdrop');
+        if(backdrop) backdrop.remove();
       }
 
-      promptSubmit.addEventListener('click', submitPrompt);
-      promptCancel.addEventListener('click', cancelPrompt);
+      //Event listeners
+      promptSubmit.addEventListener('click', () => {
+        submitPrompt();
+      });
+      promptCancel.addEventListener('click', () => {
+        cancelPrompt();
+      });
 
       promptContainer.addEventListener('hidden.bs.modal', () => {
-        resolve(null);
-      })
+        clear()
+      });
 
+      promptContainer.addEventListener('shown.bs.modal', () => {
+        promptField.focus();
+        DOMUtils.useEnterToSubmit(promptField, promptSubmit);
+      });
     });
-  },
-
-  createPopOver(element) {
-    const popover = new bootstrap.Popover(element, {
-      trigger: 'manual', // We'll control when it shows and hides
-      content: ``
-    });
-
-    return popover;
   }
 };
 
@@ -142,12 +181,14 @@ export const DOMUtils = {
 
       ui: {
         clock: document.getElementById('dateAndTime'),
-        toastContainer: document.getElementsByClassName('toast-container')[0],
+        employeeToastContainer: document.getElementsByClassName('employee-toast-container')[0],
+        systemToastContainer: document.getElementsByClassName('system-toast-container')[0],
         formInputs: document.querySelectorAll('#schedule input'),
         promptContainer: document.getElementById('customPrompt'),
         promptSubmit: document.getElementById('modalSubmit'),
         promptCancel: document.getElementById('modalCancel'),
-        promptField: document.getElementById('modalInput')
+        promptField: document.getElementById('modalInput'),
+        promptBody: document.getElementById('modalBody')
       }
     };
   },
@@ -197,16 +238,24 @@ export const DOMUtils = {
     }
   },
 
-  enableEnterKeySubmit() {
-    const formInputs = this.getDOMElements.ui.formInputs;
-    const addBtn = this.getDOMElements.delivery.addBtn;
-    for (const input of formInputs) {
+  useEnterToSubmit(input, submitBtn) {
+    if (Object.keys(input).length > 0) {
+      for (const field of input) {
+        field.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            submitBtn.click();
+          }
+        });
+      }
+    } else {
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          addBtn.click();
+          submitBtn.click();
         }
       });
     }
+
+    const addBtn = this.getDOMElements.delivery.addBtn;
   },
 
   getRowId(row) {
@@ -257,7 +306,6 @@ export const DOMUtils = {
 export const MapFeatures = {
   DOM: null, //Where we will be storing our DOM elements, only relevant to the map features
   mapInstance: null, // Where we will be storing our map instance each time its created
-  popover: null,
 
   init() {
     //Check if DOM elements have loaded
@@ -271,9 +319,6 @@ export const MapFeatures = {
 
     //Listeners
     this.addListeners();
-
-    //Create a popover
-    this.popover = DOMInterface.createPopOver(this.DOM.adressInput);
   },
 
   //Getters
@@ -293,12 +338,6 @@ export const MapFeatures = {
 
     locBtn.addEventListener('click', () => this.getUserLocation());
     mapBtn.addEventListener('click', () => this.getMap());
-    adressInput.addEventListener('focus', () => {
-      this.popover.show();
-    });
-    adressInput.addEventListener('blur', () => {
-      this.popover.hide();
-    });
   },
 
   mapButtons() {

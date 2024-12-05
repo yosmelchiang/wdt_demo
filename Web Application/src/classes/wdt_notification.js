@@ -2,7 +2,7 @@ import { DOMInterface, DOMUtils } from '../utils/wdt_utility.js';
 
 class Notification {
   constructor(JSObject) {
-    this.container = DOMUtils.getDOMElements.ui.toastContainer;
+    this.container = DOMUtils.getDOMElements.ui.employeeToastContainer;
     this.id = JSObject.id;
     this.name = JSObject.name;
     this.surname = JSObject.surname;
@@ -70,5 +70,42 @@ export class DeliveryNotification extends Notification {
     <p>Phone: ${this.phone}</p>
     <p>${this.message}</p>
   `;
+  }
+}
+
+// Creating system notifications for stuff like invalid inputs, and whatnot
+export class SystemNotification extends Notification {
+  constructor(JSObject) {
+    super(JSObject)
+    this.container = DOMUtils.getDOMElements.ui.systemToastContainer;
+  }
+
+  content() {
+    return `
+    <p>${this.message}</p>`
+  }
+
+  Notify() {
+    const div = DOMUtils.createDiv;
+    const id = `${Math.floor(Math.random()*200)}-${Math.floor(Math.random()*100)}-${Math.floor(Math.random()*100)}`
+    console.log('id:', id)
+
+    div.setAttribute('id', id);
+    div.setAttribute('class', 'toast text-bg-danger');
+    div.setAttribute('role', 'alert');
+    div.setAttribute('aria-live', 'assertive');
+    div.setAttribute('aria-atomic', 'true');
+    div.setAttribute('data-bs-autohide', 'true');
+
+    div.innerHTML = `
+        <div class="toast-header text-bg-danger border-0">
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          ${this.content()}
+        </div>
+    `;
+    this.container.appendChild(div);
+    DOMInterface.createToast(id);
   }
 }

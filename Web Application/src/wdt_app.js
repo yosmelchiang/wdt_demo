@@ -29,13 +29,15 @@ const WDT_APP = {
   get deliveries() {
     return this.EMPLOYEES.get('deliveries');
   },
-l
+
   //Since we are fetching users from an API call we need to define this operation as async to ensure we get a response from our call before we try to retrieve our JSOBject.
   async init() {
     console.log('Initializing app...');
 
-    //Getting DOM Elements
+    //Initiating utilities and getting DOM Elements
     DOMUtils.init();
+
+    //Creating a reference to the DOM elements to this app, so we can use them here.
     this.DOM = DOMUtils.DOM;
 
     //Listeners
@@ -174,7 +176,12 @@ l
     const errorMessage = DOMInterface.validateDelivery(deliveryInstance);
 
     if (errorMessage) {
-      alert(errorMessage);
+      // alert(errorMessage);
+      const toastData = {
+        message: errorMessage
+      }
+      const toastInstance = factory.createEmployee('systemNotification', toastData)
+      toastInstance.Notify();
       return;
     } else if (deliveryInstance.id in this.deliveries || deliveryInstance.id in this.staffs) {
       alert(`${deliveryInstance.id.replace('.', ' ')} is already in the system.`);
@@ -192,17 +199,21 @@ l
     }
   },
 
-  clearDelivery() {
+  async clearDelivery() {
     const selectedRows = this.DOM.delivery.dTable.getElementsByClassName('selectedRow');
     if (selectedRows.length > 0) {
       const rows = Array.from(selectedRows);
       for (const row of rows) {
         const deliveryID = DOMUtils.getRowId(row);
-        let message = `Are you sure you want to clear ${deliveryID.replace(
-          '.',
-          ' '
-        )} from the board?`;
-        if (confirm(message)) {
+
+        const confirm = await DOMInterface.customPrompt( {
+          message: `Are you sure you want to clear ${deliveryID.replace('.', ' ')}?`,  
+          submitLabel: 'Yes',
+          cancelLabel: 'No'
+        })
+
+
+        if (confirm) {
           if (deliveryID in this.deliveries) {
             delete this.deliveries[deliveryID];
             row.remove();
@@ -216,7 +227,9 @@ l
   loadExtraFeatures() {
     if (this.extraFeatures) {
       MapFeatures.init();
-      DOMUtils.enableEnterKeySubmit(); // Allows the ENTER key to submit to Delivery Board
+      
+      // Allows the ENTER key to submit to Delivery Board
+      DOMUtils.useEnterToSubmit(this.DOM.ui.formInputs, this.DOM.delivery.addBtn); 
     }
   }
 };

@@ -6,9 +6,14 @@
     we are also applying company rules on font and font color.
 */
 
-.toast {
+.employee-toast-container {
   text-align: center;
   max-width: 200px !important;
+}
+
+.system-toast-container {
+  text-align: center;
+  max-width: 500px !important;
 }
 
 #map {
