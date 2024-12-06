@@ -4,6 +4,9 @@ import { factory } from '../classes/wdt_factory.js';
 export const DOMInterface = {
   //Properties
   toast: {
+
+    activeToasts: {},
+
     create(type, toastData) {
       let toastInstance;
       switch (type) {
@@ -22,14 +25,27 @@ export const DOMInterface = {
       }
     },
 
-    show(id) {
+    show(id, callback) {
       const toastWindow = document.getElementById(`${id}`);
       const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
       toastBootstrap.show();
 
+      this.activeToasts[id] = toastWindow //Tracking the active toasts we are showing to the user
+
       toastWindow.addEventListener('hidden.bs.toast', () => {
+        delete this.activeToasts[id] //Remove from the active toasts object
         toastWindow.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+        console.log('Stopping the timer')
+        callback() //So we can clear the interval is the notification is hidden/manually closed
       });
+    },
+
+    update(id, message) {
+      const toastWindow = this.activeToasts[id];
+      if(toastWindow) {
+        const body = toastWindow.querySelector('.toast-body')
+        body.innerHTML = message
+      }
     }
   },
 

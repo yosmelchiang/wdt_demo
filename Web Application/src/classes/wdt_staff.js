@@ -26,7 +26,8 @@ export class Staff extends Employee {
     this.expectedRTime = JSObject.returnTime;
   }
 
-  set in(value) { //The value doesnt serve any purpose, but we need a value in a set accessor so we are just using a placeholder
+  set in(value) {
+    //The value doesnt serve any purpose, but we need a value in a set accessor so we are just using a placeholder
     this.status = 'In';
     this.outTime = '';
     this.duration = '';
@@ -40,29 +41,37 @@ export class Staff extends Employee {
     const checkIfLate = setInterval(() => {
       const time = factory.createEmployee('time', new Date());
       const late = time.isLate(this.expectedRTime);
+      const lateBy = time.lateBy(this.expectedRTime);
 
       if (this.status === 'Out') {
         if (late) {
-          //Create toast notification data and message
-          // const toastData = {
-          //   id: this.id,
-          //   picture: this.picture,
-          //   name: this.name,
-          //   surname: this.surname,
-          //   message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
-          // };
-          
-          DOMInterface.toast.create('staff', { 
-            id: this.id,
-            picture: this.picture,
-            name: this.name,
-            surname: this.surname,
-            message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
-          })
-          // const toastInstance = factory.createEmployee('staffNotification', toastData);
-          // toastInstance.Notify();
+          const toastId = this.id;
+          const message = `Late by: ${lateBy} mins`;
 
-          clearInterval(checkIfLate);
+          if (!(DOMInterface.toast.activeToasts[toastId])) {
+            DOMInterface.toast.create('staff', {
+              id: toastId,
+              picture: this.picture,
+              name: this.name,
+              surname: this.surname,
+              message: message
+            });
+
+            //Pass a callback to clear the interval on notification close
+            DOMInterface.toast.show(toastId, () =>  {
+              clearInterval(checkIfLate)
+              console.log('Timer stopped')
+            });
+          } else {
+            DOMInterface.toast.update(
+              toastId,
+              `
+            <img src="${this.picture}" alt="Staff Picture">
+            <p>${this.name} ${this.surname} is late!</p>
+            <p>${message}</p>
+              `
+            );
+          }
         }
       } else {
         clearInterval(checkIfLate);
@@ -71,4 +80,3 @@ export class Staff extends Employee {
     return checkIfLate;
   }
 }
-

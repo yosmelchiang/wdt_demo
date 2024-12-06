@@ -1,4 +1,4 @@
-import { DOMInterface, DOMUtils } from '../utils/wdt_utility.js';
+import { DOMUtils } from '../utils/wdt_utility.js';
 
 class Notification {
   constructor(JSObject) {
@@ -35,7 +35,6 @@ class Notification {
         </div>
     `;
     this.container.appendChild(div);
-    DOMInterface.toast.show(this.id);
   }
 }
 
@@ -96,6 +95,7 @@ export class SystemNotification extends Notification {
     div.setAttribute('aria-live', 'assertive');
     div.setAttribute('aria-atomic', 'true');
     div.setAttribute('data-bs-autohide', 'true');
+    div.setAttribute('style', 'z-index: 1060'); // Ensure it appears above the modal
 
     div.innerHTML = `
         <div class="toast-header text-bg-danger border-0">
@@ -106,6 +106,6 @@ export class SystemNotification extends Notification {
         </div>
     `;
     this.container.appendChild(div);
-    DOMInterface.toast.show(id);
+    // DOMInterface.toast.show(id);
   }
 }
