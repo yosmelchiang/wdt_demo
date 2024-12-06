@@ -1,3 +1,4 @@
+import { DOMInterface } from '../utils/wdt_utility.js';
 import { Employee } from './wdt_employee.js';
 import { factory } from './wdt_factory.js';
 
@@ -26,18 +27,29 @@ export class Delivery extends Employee {
       if (deliveryID in deliveries) {
         if (late) {
           //Create toast notification data and message
-          const toastData = {
-            id: deliveryID,
-            name: this.name,
-            surname: this.surname,
-            phone: this.phone,
-            adress: this.adress,
-            return: this.expectedRTime,
-            message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
-          };
+          // const toastData = {
+          //   id: deliveryID,
+          //   name: this.name,
+          //   surname: this.surname,
+          //   phone: this.phone,
+          //   adress: this.adress,
+          //   return: this.expectedRTime,
+          //   message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
+          // };
 
-          const toastInstance = factory.createEmployee('deliveryNotification', toastData);
-          toastInstance.Notify();
+          DOMInterface.toast.create('delivery', 
+            {
+              id: deliveryID,
+              name: this.name,
+              surname: this.surname,
+              phone: this.phone,
+              adress: this.adress,
+              return: this.expectedRTime,
+              message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
+            }
+          )
+          // const toastInstance = factory.createEmployee('deliveryNotification', toastData);
+          // toastInstance.Notify();
           clearInterval(checkIfLate);
         }
       } else {

@@ -1,3 +1,4 @@
+import { DOMInterface } from '../utils/wdt_utility.js';
 import { Employee } from './wdt_employee.js';
 import { factory } from './wdt_factory.js';
 
@@ -43,16 +44,23 @@ export class Staff extends Employee {
       if (this.status === 'Out') {
         if (late) {
           //Create toast notification data and message
-          const toastData = {
+          // const toastData = {
+          //   id: this.id,
+          //   picture: this.picture,
+          //   name: this.name,
+          //   surname: this.surname,
+          //   message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
+          // };
+          
+          DOMInterface.toast.create('staff', { 
             id: this.id,
             picture: this.picture,
             name: this.name,
             surname: this.surname,
             message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
-          };
-
-          const toastInstance = factory.createEmployee('staffNotification', toastData);
-          toastInstance.Notify();
+          })
+          // const toastInstance = factory.createEmployee('staffNotification', toastData);
+          // toastInstance.Notify();
 
           clearInterval(checkIfLate);
         }

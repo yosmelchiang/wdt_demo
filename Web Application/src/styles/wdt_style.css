@@ -12,6 +12,7 @@
 }
 
 .system-toast-container {
+  z-index: 1060;
   text-align: center;
   max-width: 500px !important;
 }

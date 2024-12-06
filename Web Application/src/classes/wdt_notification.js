@@ -35,7 +35,7 @@ class Notification {
         </div>
     `;
     this.container.appendChild(div);
-    DOMInterface.createToast(this.id);
+    DOMInterface.toast.show(this.id);
   }
 }
 
@@ -101,11 +101,11 @@ export class SystemNotification extends Notification {
         <div class="toast-header text-bg-danger border-0">
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-        <div class="toast-body">
+        <div class="toast-body" style="font-size: 1.5rem; color: white">
           ${this.content()}
         </div>
     `;
     this.container.appendChild(div);
-    DOMInterface.createToast(id);
+    DOMInterface.toast.show(id);
   }
 }

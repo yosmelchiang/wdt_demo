@@ -1,16 +1,50 @@
 import { fetchAdressFromCoords } from '../api/wdt_api.js';
+import { factory } from '../classes/wdt_factory.js';
 
 export const DOMInterface = {
+  //Properties
+  toast: {
+    create(type, toastData) {
+      let toastInstance;
+      switch (type) {
+        case 'staff':
+          toastInstance = factory.createEmployee('staffNotification', toastData);
+          toastInstance.Notify();
+          break;
+        case 'delivery':
+          toastInstance = factory.createEmployee('deliveryNotification', toastData);
+          toastInstance.Notify();
+          break;
+        case 'system':
+          toastInstance = factory.createEmployee('systemNotification', toastData);
+          toastInstance.Notify();
+        default:
+      }
+    },
+
+    show(id) {
+      const toastWindow = document.getElementById(`${id}`);
+      const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
+      toastBootstrap.show();
+
+      toastWindow.addEventListener('hidden.bs.toast', () => {
+        toastWindow.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
+      });
+    }
+  },
+
   //Getters
   async getDuration() {
-    const input = await this.customPrompt( {
-      message: 'Please enter the number of minutes the staff member will be out',
-      validateInput: (input) => !this.isInvalidDuration(input),
-      onInvalidInput: () => alert('Invalid duration, please try again'),
-      placeholder: 'Enter minutes'
+    while (true) {
+      const input = await this.customPrompt(
+        'Please enter the number of minutes the staff member will be out'
+      );
 
-    })
-    return input !== null ? parseInt(input) : null;
+      if (input === null) {
+        return null; //Return null back to staffOut if the user cancels
+      }
+      return parseInt(input);
+    }
   },
 
   //Methods
@@ -18,7 +52,10 @@ export const DOMInterface = {
     if (input === null) {
       return true;
     }
-    return input.trim() === '' || isNaN(input) || input <= 0;
+
+    const trimmedInput = String(input).trim(); //Making sure the input is a string
+    const parsedInput = parseInt(trimmedInput, 10); //Making sure to parse as a number
+    return trimmedInput === '' || isNaN(input) || parsedInput <= 0;
   },
 
   validateDelivery(instance) {
@@ -46,107 +83,54 @@ export const DOMInterface = {
     return errorMessage;
   },
 
-  createToast(id) {
-    const toastWindow = document.getElementById(`${id}`);
-    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastWindow);
-    toastBootstrap.show();
-
-    toastWindow.addEventListener('hidden.bs.toast', () => {
-      toastWindow.remove(); //Removes the created DOM element once the toast has faded or closed manually by the user
-    });
-  },
-
-  customPrompt( {
-    message,
-    validateInput = null,
-    onInvalidInput = null,
-    placeholder = '',
-    submitLabel = 'Submit',
-    cancelLabel = 'Cancel'
-  }) {
+  customPrompt(message) {
     return new Promise((resolve) => {
-      //DOM elements
-      const { promptContainer, promptSubmit, promptCancel, promptField, promptBody } = DOMUtils.DOM.ui;
+      const { promptContainer, promptSubmit, promptCancel, promptField } = DOMUtils.DOM.ui;
 
-      //Creatong a bootstrap modal
-      const prompt = new bootstrap.Modal(promptContainer, {
-        backdrop: 'static', //prevents closing when clicking outside of the modal
-        keyboard: false //Disabling pressing the ESC button to close the modal
-      });
-
-      //Setting up the UI elements
+      const prompt = new bootstrap.Modal(promptContainer);
       document.getElementById('customPromptLabel').innerText = message;
-      promptField.placeholder = placeholder;
-      promptSubmit.innerText = submitLabel;
-      promptCancel.innerText = cancelLabel;
 
-      //Disable promptField if no input is needed (confirmation mode)
-      if(!validateInput) {
-        promptBody.style.display = 'none' //Hide the field
-        promptField.style.display = 'none' //Hide the field
-      } else {
-        promptBody.style.display = ''; //Show the field
-        promptField.style.display = ''; //Show the field
-      }
-
-      //Showing the modal
       prompt.show();
 
       const submitPrompt = () => {
         const userInput = promptField.value;
-        
-        if(validateInput) {
-          if(validateInput(userInput)) {
-            clear();
-            resolve(userInput);
-          } else if(onInvalidInput){
-            onInvalidInput(userInput); //Call invalid input if needed
-            promptField.value = ''; //Clear the inputs
-          } 
+        if (!this.isInvalidDuration(userInput)) {
+          promptSubmit.removeEventListener('click', submitPrompt);
+          prompt.hide();
+          resolve(userInput);
+          promptField.value = '';
         } else {
-          clear();
-          resolve(true); //For comfirmation prompts
+          this.toast.create('system', { message: 'Invalid input, try again'})
+          // alert('Invalid input, try again');
+          promptField.value = '';
+          return;
         }
       };
 
       const cancelPrompt = () => {
-        clear();
+        prompt.hide();
         resolve(null);
       };
 
-      //Clear and remove listeners
-      const clear = () => {
-        promptSubmit.removeEventListener('click', submitPrompt);
-        promptCancel.removeEventListener('click', cancelPrompt);
-        promptContainer.removeEventListener('hidden.bs.modal', clear)
-        promptField.value= ''; //Reset input
-        prompt.hide();
-
-        const backdrop = document.querySelector('.modal-backdrop');
-        if(backdrop) backdrop.remove();
-      }
-
-      //Event listeners
-      promptSubmit.addEventListener('click', () => {
-        submitPrompt();
-      });
-      promptCancel.addEventListener('click', () => {
-        cancelPrompt();
-      });
-
-      promptContainer.addEventListener('hidden.bs.modal', () => {
-        clear()
-      });
+      promptSubmit.addEventListener('click', submitPrompt);
+      promptCancel.addEventListener('click', cancelPrompt);
 
       promptContainer.addEventListener('shown.bs.modal', () => {
         promptField.focus();
         DOMUtils.useEnterToSubmit(promptField, promptSubmit);
+      });
+
+      promptContainer.addEventListener('hidden.bs.modal', () => {
+        promptSubmit.removeEventListener('click', submitPrompt);
+        promptCancel.removeEventListener('click', cancelPrompt);
+        resolve(null);
       });
     });
   }
 };
 
 export const DOMUtils = {
+  //Properties
   DOM: null,
 
   init() {
@@ -304,6 +288,7 @@ export const DOMUtils = {
 };
 
 export const MapFeatures = {
+  //Properties
   DOM: null, //Where we will be storing our DOM elements, only relevant to the map features
   mapInstance: null, // Where we will be storing our map instance each time its created
 
@@ -334,7 +319,7 @@ export const MapFeatures = {
 
   //Methods
   addListeners() {
-    const { mapBtn, locBtn, adressInput } = this.DOM;
+    const { mapBtn, locBtn } = this.DOM;
 
     locBtn.addEventListener('click', () => this.getUserLocation());
     mapBtn.addEventListener('click', () => this.getMap());

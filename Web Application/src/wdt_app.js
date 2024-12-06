@@ -129,7 +129,8 @@ const WDT_APP = {
       }
       return;
     }
-    alert('Please select one or more rows and try again.');
+    DOMInterface.toast.create('system', { message: 'Please select one or more rows and try again.'})
+    // alert('Please select one or more rows and try again.');
   },
 
   staffIn() {
@@ -152,7 +153,8 @@ const WDT_APP = {
       }
       return;
     }
-    alert('Please select one or more rows and try again.');
+    DOMInterface.toast.create('system', { message: 'Please select one or more rows and try again.'})
+    // alert('Please select one or more rows and try again.');
   },
 
   addDelivery(formInputs) {
@@ -177,14 +179,16 @@ const WDT_APP = {
 
     if (errorMessage) {
       // alert(errorMessage);
-      const toastData = {
-        message: errorMessage
-      }
-      const toastInstance = factory.createEmployee('systemNotification', toastData)
-      toastInstance.Notify();
+      // const toastData = {
+      //   message: errorMessage
+      // }
+      DOMInterface.toast.create('system', { message: errorMessage })
+      // const toastInstance = factory.createEmployee('systemNotification', toastData)
+      // toastInstance.Notify();
       return;
     } else if (deliveryInstance.id in this.deliveries || deliveryInstance.id in this.staffs) {
-      alert(`${deliveryInstance.id.replace('.', ' ')} is already in the system.`);
+      DOMInterface.toast.create('system', { message: `${deliveryInstance.id.replace('.', ' ')} is already in the system.`})
+      // alert(`${deliveryInstance.id.replace('.', ' ')} is already in the system.`);
     } else {
       this.deliveries[deliveryInstance.id] = deliveryInstance;
       deliveryInstance.deliveryDriverIsLate(this.EMPLOYEES);
@@ -199,21 +203,17 @@ const WDT_APP = {
     }
   },
 
-  async clearDelivery() {
+  clearDelivery() {
     const selectedRows = this.DOM.delivery.dTable.getElementsByClassName('selectedRow');
     if (selectedRows.length > 0) {
       const rows = Array.from(selectedRows);
       for (const row of rows) {
         const deliveryID = DOMUtils.getRowId(row);
-
-        const confirm = await DOMInterface.customPrompt( {
-          message: `Are you sure you want to clear ${deliveryID.replace('.', ' ')}?`,  
-          submitLabel: 'Yes',
-          cancelLabel: 'No'
-        })
-
-
-        if (confirm) {
+        let message = `Are you sure you want to clear ${deliveryID.replace(
+          '.',
+          ' '
+        )} from the board?`;
+        if (confirm(message)) {
           if (deliveryID in this.deliveries) {
             delete this.deliveries[deliveryID];
             row.remove();

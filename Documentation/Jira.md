@@ -29,7 +29,7 @@
 
 # Sprint Plan (4 weeks)
 
-In this project, we are going to use 4 weeks to develop our application for the We Deliver Tech application, each focusing on a set of epics, issues and tasks.
+In this project, we are going to spend 4 weeks to develop the We Deliver Tech application, each focusing on a set of epics, issues and tasks.
 
 ## Sprint 1 (18 Nov - 24 Nov) - Design Phase (1 week)
 
@@ -57,8 +57,6 @@ This sprint is categorized in the following main focus areas:
      - The directory structure for this project will be based on a logical and modular structure. We want want to have the main application easily accessible for our client while dependencies are placed inside our `src` folder, their in their own folder:
      - `/api`: API-related scripts.
      - `/classes`: Reusable class definitions and functions.
-     - `/components`: User Interface elements, such as toasts or additional features.
-     - `/events`: Event management, such as row selection.
      - `/styles`: Stylesheets.
      - `/utilities`: Utility functions and shared resources.
   2. ![alt text](tasks.png) Create main application
@@ -101,7 +99,7 @@ This sprint is categorized in the following main focus areas:
      - `Orders`: Hovering with the mouse will activate a dropdown of the same sub-items as `Inventory`.
      - The hovering effect are applied through our `/Web Application/src/styles/wdt_style.css` stylesheet. The sub-items are initially hidden and activated on mouse hover.
   4. ![alt text](tasks.png) Set the default page to the Dashboard
-     While our `Dashboard` element of the Navbar, has no dropdown functionality, we want our user to be able to navigate back to the frontpage. We have therefore set the link reference to (`index.html`).
+    - While our `Dashboard` element of the Navbar, has no dropdown functionality, we want our user to be able to navigate back to the frontpage. We have therefore set the link reference to (`index.html`).
   5. ![alt text](tasks.png) Add hover animations for Navbar sub-menus (Inventory and Orders)
      - We want the sub-menus to appear with a nice opacity change from 0% to 100% on mouse hover, as well as change background color from #3e3c3c to #83d1e1 (company branding)
   6. ![alt text](tasks.png) Apply company branding to Navbar
@@ -132,7 +130,7 @@ This sprint is categorized in the following main focus areas:
   12. ![alt text](tasks.png) Implement company branding to tables and buttons
       - As the style requirements are quite extensive, we are not going to list them here, but we are going to make sure for company branding compliance for these elements as well.
   13. ![alt text](tasks.png) Design digital clock
-      - There is no much to design here, but we are going to use a footer to place our digital clock, so we apply this at the end of our page.
+      - There is no much to design here, but we are going to use a footer element to place our digital clock, so we apply this at the end of our page.
 
 - ![alt text](epics.png) Staff: API Integration
   - Issues
@@ -143,7 +141,7 @@ This sprint is categorized in the following main focus areas:
       - Here is how the `staffUserGet` function works:
         - `staffUsreGet`: Fires up the API call and waits for a response, if a response is ok, it will receive an object from this promise. This object will be used to populate our `StaffMap` which will contain an `id`(key) and `class instance`(value). We will iterate through each item in our `Map` and populate the HTML table accordingly with a row for each staff.
   16. ![alt text](tasks.png) Populate the Staff table with API data
-      - Our `populateRow` takes care of the table elements. This function will be called from `staffUserGet` function, create a new row with the HTML elements for each user and append it to our `staffTableBody`.
+      - Our `updateStaff` utility function lives in `/Web Application/src/utils/wdt_utility.js` and takes care of the table elements. This function will be called from `staffUserGet` function, create a new row with the HTML elements for each user and append it to our table body.
 
 ## Screenshots and explanation
 
@@ -159,7 +157,7 @@ We have decided to prioritze these epics and issues first in order to cover as m
     - The navbar should not have any concrete functionanility, other than visual animations on hover. However, the `Dashboard` button should always direct the user to the front page.
     - Company branding rules should be properly implemented for the requested elements.
     - Project dependencies and libraries should be properly linked and structured. Since we are using a modular approach for this project, the folder structure should be concise and easy to understand.
-    - API calls and user fetching should happen once the DOM elementes have fully loaded. We have provided a console log for the development team to check that loaded elements are fully loaded.
+    - API calls and user fetching should happen once the DOM elementes have fully loaded. We have provided a history of console logs for the development team to check that loaded elements are fully loaded.
 
 ## Sprint 2 (25 Nov - 2 Dec) - Staff Functionality (1 week)
 
@@ -183,11 +181,11 @@ This sprint is categorized in the following focus areas:
     - Issues
 
     1.  ![alt text](tasks.png) Implement row selection functionality
-        - `enableRowSelection`: This function applies a specific class each row that is mouse clicked, this class will be used for styling as well as an element identifier. The selection of either table rows should not conflict. The styling of this class will consist will be the following:
+        - `enableStaffSelection`: This function applies a specific class each row that is mouse clicked, this class will be used for styling as well as an element identifier. The selection of either table rows should not conflict. The styling of this class will consist will be the following:
         - `background-color:#198754;`
         - `color: white;`
         - The name of the class: `selectedRow`
-    2.  ![alt text](tasks.png) Implement `getUserDuration` functionality
+    2.  ![alt text](tasks.png) Implement `getDuration` functionality
         - We are going to ask the user for a duration in `minutes` with a prompt window, this is the first step that happens when an user clicks on one or multiple rows and the `Out` button right after.
     3.  ![alt text](tasks.png) Add validation for duration input.
         - After the user has provided a duration, we want to validate for a `non-numerical` value, an `empty` value, or a `negative` number. If any of the conditions do not pass, the user will be prompted repeatdly with an alert.
@@ -196,6 +194,7 @@ This sprint is categorized in the following focus areas:
         - We are going to define a class for all time functionality with methods categorized as follow:
         - **Time display**: These methods do not require a paremeter. They use the `this` Date object provided during the instance creation return either a numerical value or a string.
           - `displayDateAndTime`: Returnss a long formatted string inluding day of the week, month, date and time in HH:MM:SS format.
+          - `displayTime`: Runs an interval that sets the footer content to the results of `displayDateAndTime`.
           - `currentTimeInHours`: Return the current time in a string with a simple readable format: HH:MM.
           - `currentTimeInMins`: Returns the current time in a number format that we can use for our comparison operators. This is mainly for creating a condition for late staffs/deliveries and triggering a notification.
         - **Time Conversions**: These methods ask for a single parameter, either minutes or hours, and return either a numerical value or a string.
