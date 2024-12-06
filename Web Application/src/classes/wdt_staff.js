@@ -1,4 +1,4 @@
-import { DOMInterface } from '../utils/wdt_utility.js';
+import { DOMInterface } from '../utils/DOMInterface.js';
 import { Employee } from './wdt_employee.js';
 import { factory } from './wdt_factory.js';
 
@@ -60,7 +60,6 @@ export class Staff extends Employee {
             //Pass a callback to clear the interval on notification close
             DOMInterface.toast.show(toastId, () =>  {
               clearInterval(checkIfLate)
-              console.log('Timer stopped')
             });
           } else {
             DOMInterface.toast.update(

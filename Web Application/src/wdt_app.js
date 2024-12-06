@@ -1,6 +1,8 @@
 import { fetchUserData } from './api/wdt_api.js'; // API Imports
 import { factory } from './classes/wdt_factory.js'; // Factory Pattern
-import { DOMInterface, DOMUtils, MapFeatures } from './utils/wdt_utility.js'; // Utilities
+import { DOMInterface } from './utils/DOMInterface.js';
+import { DOMLocation } from './utils/DOMLocation.js';
+import { DOMUtils } from './utils/DOMUtils.js';
 
 const WDT_APP = {
   DOM: null, // Property to store all DOM elements
@@ -13,7 +15,7 @@ const WDT_APP = {
       {
         users: 5,
         seed: 'wdtnoroff',
-        lateInterval: 1000
+        lateInterval: 60000
       }
     ]
   ]), // EMPLOYEE map, we are going to store both staff/delivery class instances in here and other useful data to be used across the app.
@@ -92,9 +94,9 @@ const WDT_APP = {
     for (const staff in this.staffs) {
       const newInstance = factory.createEmployee('staff', this.staffs[staff]); //Creating new class instances
       this.staffs[staff] = newInstance; //Here we are replacing the existing JSObject with Class instances in our map for OOP handling
-      DOMUtils.populateStaff(newInstance); //Here we are populating the DOM
+      DOMUtils.table.populateStaff(newInstance); //Here we are populating the DOM
     }
-    DOMUtils.enableStaffSelection();
+    DOMUtils.interact.enableStaffSelection();
   },
 
   //Staff Management
@@ -102,14 +104,14 @@ const WDT_APP = {
     const selectedRows = this.DOM.staff.sTable.getElementsByClassName('selectedRow');
 
     if (selectedRows.length > 0) {
-      const input = await DOMInterface.getDuration();
+      const input = await DOMInterface.prompt.getDuration();
       const rows = Array.from(selectedRows);
 
       for (const row of rows) {
         if (input === null) {
           row.classList.remove('selectedRow');
         } else {
-          const staffID = DOMUtils.getRowId(row);
+          const staffID = DOMUtils.table.getRowId(row);
           const time = factory.createEmployee('time', new Date());
           const outTime = time.currentTimeInHours;
           const duration = time.convertMinsToHours(input);
@@ -121,7 +123,7 @@ const WDT_APP = {
               staffInstance.staffMemberIsLate(this.EMPLOYEES);
               staffInstance.out = { row, outTime, duration, returnTime };
 
-              DOMUtils.updateStaff = { row, staffInstance };
+              DOMUtils.table.updateStaff = { row, staffInstance };
             }
           }
           row.classList.remove('selectedRow');
@@ -140,13 +142,13 @@ const WDT_APP = {
       const rows = Array.from(selectedRows);
 
       for (const row of rows) {
-        const staffID = DOMUtils.getRowId(row);
+        const staffID = DOMUtils.table.getRowId(row);
 
         for (const staff in this.staffs) {
           if (staff === staffID) {
             const staffInstance = this.staffs[staff];
             staffInstance.in = {}; //Need to pass a value to trigger the set accessor, so we are passing an empty object.
-            DOMUtils.updateStaff = { row, staffInstance };
+            DOMUtils.table.updateStaff = { row, staffInstance };
           }
         }
         row.classList.remove('selectedRow');
@@ -175,7 +177,7 @@ const WDT_APP = {
       expectedRTime: rtime.value
     });
 
-    const errorMessage = DOMInterface.validateDelivery(deliveryInstance);
+    const errorMessage = DOMInterface.input.validate(deliveryInstance);
 
     if (errorMessage) {
       // alert(errorMessage);
@@ -193,8 +195,8 @@ const WDT_APP = {
       this.deliveries[deliveryInstance.id] = deliveryInstance;
       deliveryInstance.deliveryDriverIsLate(this.EMPLOYEES);
 
-      DOMUtils.populateDeliveries(deliveryInstance);
-      DOMUtils.enableDeliverySelection();
+      DOMUtils.table.populateDeliveries(deliveryInstance);
+      DOMUtils.interact.enableDeliverySelection();
 
       //Clear the table values
       for (const fields of inputs) {
@@ -208,7 +210,7 @@ const WDT_APP = {
     if (selectedRows.length > 0) {
       const rows = Array.from(selectedRows);
       for (const row of rows) {
-        const deliveryID = DOMUtils.getRowId(row);
+        const deliveryID = DOMUtils.table.getRowId(row);
         let message = `Are you sure you want to clear ${deliveryID.replace(
           '.',
           ' '
@@ -226,12 +228,15 @@ const WDT_APP = {
 
   loadExtraFeatures() {
     if (this.extraFeatures) {
-      MapFeatures.init();
-      
+      //Allows the user to use a map to find an adress, as well as benefit from the browser location-service.
+      DOMLocation.init();
+
       // Allows the ENTER key to submit to Delivery Board
-      DOMUtils.useEnterToSubmit(this.DOM.ui.formInputs, this.DOM.delivery.addBtn); 
+      DOMUtils.interact.useEnterToSubmit(this.DOM.ui.formInputs, this.DOM.delivery.addBtn); 
     }
   }
 };
+
+
 
 window.addEventListener('load', WDT_APP.init());

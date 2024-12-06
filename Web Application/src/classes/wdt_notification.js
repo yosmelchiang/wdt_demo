@@ -1,8 +1,9 @@
-import { DOMUtils } from '../utils/wdt_utility.js';
+import { DOMInterface } from '../utils/DOMInterface.js';
+import { DOMUtils } from '../utils/DOMUtils.js';
 
 class Notification {
   constructor(JSObject) {
-    this.container = DOMUtils.getDOMElements.ui.employeeToastContainer;
+    this.container = DOMUtils.get.DOMElements.ui.employeeToastContainer;
     this.id = JSObject.id;
     this.name = JSObject.name;
     this.surname = JSObject.surname;
@@ -17,7 +18,7 @@ class Notification {
   }
 
   Notify() {
-    const div = DOMUtils.createDiv;
+    const div = DOMUtils.create.div;
 
     div.setAttribute('id', this.id);
     div.setAttribute('class', 'toast text-bg-danger');
@@ -76,7 +77,7 @@ export class DeliveryNotification extends Notification {
 export class SystemNotification extends Notification {
   constructor(JSObject) {
     super(JSObject)
-    this.container = DOMUtils.getDOMElements.ui.systemToastContainer;
+    this.container = DOMUtils.get.DOMElements.ui.systemToastContainer;
   }
 
   content() {
@@ -85,9 +86,8 @@ export class SystemNotification extends Notification {
   }
 
   Notify() {
-    const div = DOMUtils.createDiv;
+    const div = DOMUtils.create.div;
     const id = `${Math.floor(Math.random()*200)}-${Math.floor(Math.random()*100)}-${Math.floor(Math.random()*100)}`
-    console.log('id:', id)
 
     div.setAttribute('id', id);
     div.setAttribute('class', 'toast text-bg-danger');
@@ -106,6 +106,6 @@ export class SystemNotification extends Notification {
         </div>
     `;
     this.container.appendChild(div);
-    // DOMInterface.toast.show(id);
+    DOMInterface.toast.show(id);
   }
 }

@@ -1,4 +1,4 @@
-import { DOMInterface } from '../utils/wdt_utility.js';
+import { DOMInterface } from '../utils/DOMInterface.js';
 import { Employee } from './wdt_employee.js';
 import { factory } from './wdt_factory.js';
 
@@ -22,23 +22,41 @@ export class Delivery extends Employee {
     const checkIfLate = setInterval(() => {
       const time = factory.createEmployee('time', new Date());
       const late = time.isLate(this.expectedRTime);
+      const lateBy = time.lateBy(this.expectedRTime);
       const deliveryID = this.id;
 
       if (deliveryID in deliveries) {
         if (late) {
-          DOMInterface.toast.create('delivery', 
-            {
-              id: deliveryID,
+          const toastId = deliveryID;
+          const message = `Late by: ${lateBy} mins`;
+
+          if (!(DOMInterface.toast.activeToasts[toastId])) {
+            DOMInterface.toast.create('delivery', {
+              id: toastId,
               name: this.name,
               surname: this.surname,
               phone: this.phone,
               adress: this.adress,
               return: this.expectedRTime,
-              message: `Late by: ${time.lateBy(this.expectedRTime)} mins`
-            }
-          )
+              message: message
+            });
 
-          clearInterval(checkIfLate);
+            //Pass a callback to clear the interval on notification close
+            DOMInterface.toast.show(toastId, () => {
+              clearInterval(checkIfLate);
+            });
+          } else {
+            DOMInterface.toast.update(
+              toastId,
+              `
+              <p>${this.name} ${this.surname}</p>
+              <p>Return time was: ${this.expectedRTime}</p>
+              <p>Address: ${this.adress}</p>
+              <p>Phone: ${this.phone}</p>
+              <p>${message}</p>
+              `
+            );
+          }
         }
       } else {
         clearInterval(checkIfLate);
