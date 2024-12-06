@@ -21,6 +21,7 @@ export const DOMInterface = {
           case 'system':
             toastInstance = factory.createEmployee('systemNotification', toastData);
             toastInstance.Notify();
+            break;
           default:
         }
       },
@@ -52,7 +53,7 @@ export const DOMInterface = {
   
     prompt: {
       async getDuration() {
-        while (true) {
+        
           const input = await this.customPrompt(
             'Please enter the number of minutes the staff member will be out'
           );
@@ -60,8 +61,9 @@ export const DOMInterface = {
           if (input === null) {
             return null; //Return null back to staffOut if the user cancels
           }
-          return parseInt(input);
-        }
+
+          const duration = parseInt(input);
+          return isNaN(duration) ? null : duration;
       },
   
       isInvalidDuration(input) {
@@ -95,10 +97,8 @@ export const DOMInterface = {
               resolve(userInput);
               promptField.value = '';
             } else {
-              this.toast.create('system', { message: 'Invalid input, try again'})
-              // alert('Invalid input, try again');
+              DOMInterface.toast.create('system', { message: 'Invalid input, try again'})
               promptField.value = '';
-              return;
             }
           };
     
