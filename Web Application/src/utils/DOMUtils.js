@@ -22,7 +22,7 @@ export const DOMUtils = {
         },
   
         schedule: {
-          vehicle: document.getElementById('schedule').getElementsByTagName('select'),
+          vehicle: document.getElementById('schedule').getElementsByTagName('select')[0],
           inputs: document.getElementById('schedule').getElementsByTagName('input')
         },
   

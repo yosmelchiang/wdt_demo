@@ -6,7 +6,9 @@ import { DOMUtils } from './utils/DOMUtils.js';
 
 const WDT_APP = {
   //Properties
+
   DOM: null, // Property to store all DOM elements
+  extraFeatures: true, // Set to true to enable extra features
 
   EMPLOYEES: new Map([
     ['staffs', {}],
@@ -46,7 +48,8 @@ const WDT_APP = {
   //Staff Management
   staff: {
     async staffOut() {
-      const selectedRows = WDT_APP.DOM.staff.sTable.getElementsByClassName('selectedRow');
+      const { systemToast } = WDT_APP.utils,
+        selectedRows = WDT_APP.DOM.staff.sTable.getElementsByClassName('selectedRow');
 
       if (selectedRows.length > 0) {
         const input = await DOMInterface.prompt.getDuration();
@@ -62,20 +65,21 @@ const WDT_APP = {
         }
         return;
       }
-      WDT_APP.systemToast('Please select one or more rows and try again.');
+      systemToast('Please select one or more rows and try again.');
     },
 
     markAsOut(row, input) {
-      const staffID = DOMUtils.table.getRowId(row);
-      const time = factory.createEmployee('time', new Date());
-      const outTime = time.currentTimeInHours;
-      const duration = time.convertMinsToHours(input);
-      const returnTime = time.addTime(input);
+      const staffID = DOMUtils.table.getRowId(row),
+        time = factory.createEmployee('time', new Date()),
+        outTime = time.currentTimeInHours,
+        duration = time.convertMinsToHours(input),
+        returnTime = time.addTime(input),
+        { staffs, EMPLOYEES } = WDT_APP;
 
-      for (const staff in WDT_APP.staffs) {
+      for (const staff in staffs) {
         if (staff === staffID) {
-          const staffInstance = WDT_APP.staffs[staff];
-          staffInstance.staffMemberIsLate(WDT_APP.EMPLOYEES);
+          const staffInstance = staffs[staff];
+          staffInstance.staffMemberIsLate(EMPLOYEES);
           staffInstance.out = { row, outTime, duration, returnTime };
 
           DOMUtils.table.updateStaff = { row, staffInstance };
@@ -84,7 +88,8 @@ const WDT_APP = {
     },
 
     staffIn() {
-      const selectedRows = WDT_APP.DOM.staff.sTable.getElementsByClassName('selectedRow');
+      const { systemToast } = WDT_APP.utils,
+        selectedRows = WDT_APP.DOM.staff.sTable.getElementsByClassName('selectedRow');
 
       if (selectedRows.length > 0) {
         const rows = Array.from(selectedRows);
@@ -95,14 +100,16 @@ const WDT_APP = {
         }
         return;
       }
-      WDT_APP.systemToast('Please select one or more rows and try again.');
+      systemToast('Please select one or more rows and try again.');
     },
 
     markAsIn(row) {
-      const staffID = DOMUtils.table.getRowId(row);
-      for (const staff in WDT_APP.staffs) {
+      const staffID = DOMUtils.table.getRowId(row),
+        { staffs } = WDT_APP;
+
+      for (const staff in staffs) {
         if (staff === staffID) {
-          const staffInstance = WDT_APP.staffs[staff];
+          const staffInstance = staffs[staff];
           staffInstance.in = {}; //Need to pass a value to trigger the set accessor, so we are passing an empty object.
           DOMUtils.table.updateStaff = { row, staffInstance };
         }
@@ -113,13 +120,17 @@ const WDT_APP = {
   //Delivery Management
   delivery: {
     addDelivery(formInputs) {
-      const { vehicle, inputs } = formInputs;
-      const { fname, lname, phone, adress, rtime } = inputs;
-
-      const vehIcon =
-        vehicle.value === 'Car'
-          ? `<i class="fa fa-car" aria-hidden="true"></i>`
-          : `<i class="fa-solid fa-motorcycle"></i>`;
+      const { vehicle, inputs } = formInputs,
+        { fname, lname, phone, adress, rtime } = inputs,
+        { staffs, deliveries, EMPLOYEES } = WDT_APP,
+        { systemToast } = WDT_APP.utils,
+        { populateDeliveries } = DOMUtils.table,
+        { enableDeliverySelection } = DOMUtils.interact,
+        { validate } = DOMInterface.input,
+        vehIcon =
+          vehicle.value === 'Car'
+            ? `<i class="fa fa-car" aria-hidden="true"></i>`
+            : `<i class="fa-solid fa-motorcycle"></i>`;
 
       const deliveryInstance = factory.createEmployee('delivery', {
         vehicle: vehIcon,
@@ -130,21 +141,18 @@ const WDT_APP = {
         expectedRTime: rtime.value
       });
 
-      const errorMessage = DOMInterface.input.validate(deliveryInstance);
+      const errorMessage = validate(deliveryInstance);
 
       if (errorMessage) {
-        WDT_APP.systemToast(errorMessage);
-      } else if (
-        deliveryInstance.id in WDT_APP.deliveries ||
-        deliveryInstance.id in WDT_APP.staffs
-      ) {
-        WDT_APP.systemToast(`${deliveryInstance.id.replace('.', ' ')} is already in the system.`);
+        systemToast(errorMessage);
+      } else if (deliveryInstance.id in deliveries || deliveryInstance.id in staffs) {
+        systemToast(`${deliveryInstance.id.replace('.', ' ')} is already in the system.`);
       } else {
-        WDT_APP.deliveries[deliveryInstance.id] = deliveryInstance;
-        deliveryInstance.deliveryDriverIsLate(WDT_APP.EMPLOYEES);
+        deliveries[deliveryInstance.id] = deliveryInstance;
+        deliveryInstance.deliveryDriverIsLate(EMPLOYEES);
 
-        DOMUtils.table.populateDeliveries(deliveryInstance);
-        DOMUtils.interact.enableDeliverySelection();
+        populateDeliveries(deliveryInstance);
+        enableDeliverySelection();
 
         //Clear the table values
         for (const fields of inputs) {
@@ -154,18 +162,21 @@ const WDT_APP = {
     },
 
     clearDelivery() {
-      const selectedRows = WDT_APP.DOM.delivery.dTable.getElementsByClassName('selectedRow');
+      const selectedRows = WDT_APP.DOM.delivery.dTable.getElementsByClassName('selectedRow'),
+        { getRowId } = DOMUtils.table,
+        { deliveries } = WDT_APP;
+
       if (selectedRows.length > 0) {
         const rows = Array.from(selectedRows);
         for (const row of rows) {
-          const deliveryID = DOMUtils.table.getRowId(row);
+          const deliveryID = getRowId(row);
           let message = `Are you sure you want to clear ${deliveryID.replace(
             '.',
             ' '
           )} from the board?`;
           if (confirm(message)) {
-            if (deliveryID in WDT_APP.deliveries) {
-              delete WDT_APP.deliveries[deliveryID];
+            if (deliveryID in deliveries) {
+              delete deliveries[deliveryID];
               row.remove();
               row.classList.remove('selectedRow');
             }
@@ -174,9 +185,6 @@ const WDT_APP = {
       }
     }
   },
-
-  DigitalClock: factory.createEmployee('time', new Date()), //Creating a date object for our Digital clock, using the Time class
-  extraFeatures: true, // Set to true to enable extra features
 
   //Gettters
   get staffs() {
@@ -187,10 +195,61 @@ const WDT_APP = {
     return this.EMPLOYEES.get('deliveries');
   },
 
+  utils: {
+    addListeners() {
+      console.log('APP: Listeners added');
+
+      const { staff, schedule, delivery } = WDT_APP.DOM,
+        { outBtn, inBtn } = staff,
+        { vehicle, inputs } = schedule,
+        { addBtn, clearBtn } = delivery,
+        formInputs = { vehicle, inputs };
+
+      outBtn.addEventListener('click', () => WDT_APP.staff.staffOut());
+      inBtn.addEventListener('click', () => WDT_APP.staff.staffIn());
+      addBtn.addEventListener('click', () => WDT_APP.delivery.addDelivery(formInputs));
+      clearBtn.addEventListener('click', () => WDT_APP.delivery.clearDelivery());
+    },
+
+    digitalClock() {
+      const DigitalClock = factory.createEmployee('time', new Date()),
+        { ui } = WDT_APP.DOM,
+        { clock } = ui;
+
+      DigitalClock.displayTime(clock);
+    },
+
+    systemToast(content) {
+      const { create } = DOMInterface.toast;
+
+      create('system', {
+        message: content
+      });
+    },
+
+    loadExtraFeatures() {
+      const { extraFeatures, DOM } = WDT_APP,
+        { formInputs } = WDT_APP.DOM.ui,
+        { addBtn } = DOM.delivery,
+        { useEnterToSubmit } = DOMUtils.interact;
+
+      if (extraFeatures) {
+        //Allows the user to use a map to find an adress, as well as benefit from the browser location-service.
+        DOMLocation.init();
+
+        // Allows the ENTER key to submit to Delivery Board
+        useEnterToSubmit(formInputs, addBtn);
+      }
+    }
+  },
+
   //Methods
   //Since we are fetching users from an API call we need to define this operation as async to ensure we get a response from our call before we try to retrieve our JSOBject.
   async init() {
     console.log('Initializing app...');
+
+    const { digitalClock, addListeners, loadExtraFeatures } = WDT_APP.utils,
+      { createUser } = WDT_APP.api;
 
     //Initiating utilities and getting DOM Elements
     DOMUtils.init();
@@ -199,56 +258,19 @@ const WDT_APP = {
     this.DOM = DOMUtils.DOM;
 
     //Listeners
-    this.addListeners();
+    addListeners();
 
     //API call/fetch
     await this.api.staffUserGet(); //wait for users to be fetched, return a Promise and populate our JSObject.
 
     //create new user instances
-    this.api.createUser(); //then we run this to create new users and populate the DOM Table
+    createUser(); //then we run this to create new users and populate the DOM Table
 
     //Start digital clock
-    this.digitalClock();
+    digitalClock();
 
     //extra features
-    this.loadExtraFeatures();
-  },
-
-  digitalClock() {
-    const { ui } = this.DOM,
-      { clock } = ui;
-    this.DigitalClock.displayTime(clock);
-  },
-
-  addListeners() {
-    console.log('APP: Listeners added');
-
-    const { staff, schedule, delivery } = this.DOM,
-      { outBtn, inBtn } = staff,
-      { vehicle, inputs } = schedule,
-      { addBtn, clearBtn } = delivery;
-    const formInputs = { vehicle, inputs };
-
-    outBtn.addEventListener('click', () => this.staff.staffOut());
-    inBtn.addEventListener('click', () => this.staff.staffIn());
-    addBtn.addEventListener('click', () => this.delivery.addDelivery(formInputs));
-    clearBtn.addEventListener('click', () => this.delivery.clearDelivery());
-  },
-
-  systemToast(content) {
-    DOMInterface.toast.create('system', {
-      message: content
-    });
-  },
-
-  loadExtraFeatures() {
-    if (this.extraFeatures) {
-      //Allows the user to use a map to find an adress, as well as benefit from the browser location-service.
-      DOMLocation.init();
-
-      // Allows the ENTER key to submit to Delivery Board
-      DOMUtils.interact.useEnterToSubmit(this.DOM.ui.formInputs, this.DOM.delivery.addBtn);
-    }
+    loadExtraFeatures();
   }
 };
 
