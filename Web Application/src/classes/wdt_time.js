@@ -61,3 +61,31 @@ export class Time {
     }
   
   }
+
+  class TTime {
+    constructor(dateObject) {
+      this.dateObject = dateObject
+    }
+  }
+
+  class TDisplay extends TTime{
+
+    displayTime() {
+      return console.log('Show current time')
+    }
+
+    digitalClock() {
+      return console.log('Self-updating time')
+    }
+  }
+  
+  class TConvert extends TTime{
+
+    convertHoursToMins() {
+      return console.log('MM')
+    }
+
+    convertMinsToHours() {
+      return console.log('HH:MM')
+    }
+  }

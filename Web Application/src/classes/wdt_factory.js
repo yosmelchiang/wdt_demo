@@ -29,6 +29,18 @@ class EmployeeFactory {
           throw new Error(`Unknown type: ${type}`)
       }
     }
+
+    createTime(type, objec) {
+      switch (type) {
+        case 'diplay':
+          return console.log('Create display type of time')
+        case 'convert':
+          return console.log('Create conversion type of time')
+        default:
+          throw new Error('Unknown type:', type)
+      }
+    }
   }
   
   export const factory = new EmployeeFactory();
+  
