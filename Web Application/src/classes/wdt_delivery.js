@@ -2,7 +2,15 @@ import { DOMInterface } from '../utils/DOMInterface.js';
 import { Employee } from './wdt_employee.js';
 import { factory } from './wdt_factory.js';
 
+/**
+ * Represents a delivery driver, extending the 'Employee' class.
+ * Handles notification of delivery driver being late.
+ */
 export class Delivery extends Employee {
+  /**
+   * Initializes a Delivery instance with specific detials.
+   * @param {Object} JSObject  - Contains details like vehicle, phone, adress and return time
+   */
   constructor(JSObject) {
     super(JSObject.name, JSObject.surname); //Inherit name and surname from Employee
     this.vehicle = JSObject.vehicle;
@@ -11,10 +19,19 @@ export class Delivery extends Employee {
     this.expectedRTime = JSObject.expectedRTime;
   }
 
+  /**
+   * Gets the unique identifier for the delivery driver
+   * @returns {String} - The driver's id, consisting of 'Name.Surname'
+   */
   get id() {
     return `${this.name}.${this.surname}`;
   }
 
+  /**
+   * Checks for lateness of deliveries for a specific interval time and triggers a notification if a delivery is late.
+   * @param {Map} EMPLOYEES 
+   * @returns {Number}
+   */
   deliveryDriverIsLate(EMPLOYEES) {
     const { lateInterval } = EMPLOYEES.get('config');
     const deliveries = EMPLOYEES.get('deliveries');
@@ -30,7 +47,7 @@ export class Delivery extends Employee {
           const toastId = deliveryID;
           const message = `Late by: ${lateBy} mins`;
 
-          if (!(DOMInterface.toast.activeToasts[toastId])) {
+          if (!DOMInterface.toast.activeToasts[toastId]) {
             DOMInterface.toast.create('delivery', {
               id: toastId,
               name: this.name,

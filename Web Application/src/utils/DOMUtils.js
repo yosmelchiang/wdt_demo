@@ -1,3 +1,6 @@
+/**
+ * Main utility handling and helper functions.
+ */
 export const DOMUtils = {
   //Properties
   DOM: null,
@@ -108,7 +111,7 @@ export const DOMUtils = {
         }
       } else {
         input.addEventListener('keydown', (event) => {
-          // Add a listener to only one input
+          // Listener to only one input
           if (event.key === 'Enter') {
             submitBtn.click();
           }
@@ -121,7 +124,7 @@ export const DOMUtils = {
     //Setters
 
     /**
-     * Updated the staff table
+     * Updates the staff table
      * We are declaring values with the instance properties in an array based on instance status.
      * We are then iterating through each row cells with each of the arrays index and updating the innerHTML content.
      */

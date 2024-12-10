@@ -1,7 +1,7 @@
 /**
- *
- * @param {Object} JSObject - This function receives an object of key-value pairs, in our case its going to be a Map of keys containing empty objects.
- * @returns We are creating a direct reference to the 'staff' key, iterating through the results of our api resoinse and creating a new object for our 'staff' key each time.
+ * Fetches user data from Random User API and processes it into a map of staff objects.
+ * @param {Object} JSObject - Contains configuration and an empty map to store staff data.
+ * @returns The updated map with staff detials.
  */
 export function fetchUserData(JSObject) {
   const staffs = JSObject.get('staffs'); // Reference to the actual object stored under staffs in the Employee map
@@ -31,6 +31,11 @@ export function fetchUserData(JSObject) {
     .catch((error) => console.log('Something went wrong', error));
 }
 
+/**
+ * Fetches an adress from the Nominatim API based on latitude and longitude values.
+ * @param {Object} JSOBject - Object containing 'latitude' and 'longitude' properties.
+ * @returns A formatted adress string.
+ */
 export function fetchAdressFromCoords(JSOBject) {
   const { latitude, longitude } = JSOBject;
   return fetch(

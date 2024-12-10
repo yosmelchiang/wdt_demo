@@ -37,7 +37,6 @@ export class Staff extends Employee {
   //Methods
   staffMemberIsLate(EMPLOYEES) {
     const { lateInterval } = EMPLOYEES.get('config');
-
     const checkIfLate = setInterval(() => {
       const time = factory.createTime('time', new Date());
       const late = time.isLate(this.expectedRTime);

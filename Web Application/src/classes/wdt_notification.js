@@ -1,7 +1,14 @@
 import { DOMInterface } from '../utils/DOMInterface.js';
 import { DOMUtils } from '../utils/DOMUtils.js';
 
+/**
+ * Base class for creating Notifications
+ */
 class Notification {
+  /**
+   * Initializes a Notification instance with an Employee Toast container as default.
+   * @param {Object} JSObject - Contains notification detials like ID, name, surname and message.
+   */
   constructor(JSObject) {
     this.container = DOMUtils.get.DOMElements.ui.employeeToastContainer;
     this.id = JSObject.id;
@@ -10,6 +17,10 @@ class Notification {
     this.message = JSObject.message;
   }
 
+  /**
+   * Renders the notification's HTML content.
+   * @returns {String} - The HTML string for the notification.
+   */
   content() {
     return `
     <p>${this.name} ${this.surname}</p>
@@ -17,6 +28,9 @@ class Notification {
     `;
   }
 
+  /**
+   * Creater the inner HTML content for the notification.
+   */
   Notify() {
     const div = DOMUtils.create.div;
 
@@ -76,18 +90,20 @@ export class DeliveryNotification extends Notification {
 // Creating system notifications for stuff like invalid inputs, and whatnot
 export class SystemNotification extends Notification {
   constructor(JSObject) {
-    super(JSObject)
+    super(JSObject);
     this.container = DOMUtils.get.DOMElements.ui.systemToastContainer;
   }
 
   content() {
     return `
-    <p>${this.message}</p>`
+    <p>${this.message}</p>`;
   }
 
   Notify() {
     const div = DOMUtils.create.div;
-    const id = `${Math.floor(Math.random()*200)}-${Math.floor(Math.random()*100)}-${Math.floor(Math.random()*100)}`
+    const id = `${Math.floor(Math.random() * 200)}-${Math.floor(Math.random() * 100)}-${Math.floor(
+      Math.random() * 100
+    )}`;
 
     div.setAttribute('id', id);
     div.setAttribute('class', 'toast text-bg-danger');
