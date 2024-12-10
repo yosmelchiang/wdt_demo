@@ -70,10 +70,15 @@ const WDT_APP = {
 
     markAsOut(row, input) {
       const staffID = DOMUtils.table.getRowId(row),
-        time = factory.createEmployee('time', new Date()),
-        outTime = time.currentTimeInHours,
-        duration = time.convertMinsToHours(input),
+        dateObject = new Date(),
+        time = factory.createTime('time', dateObject),
+        displayTime = factory.createTime('display', dateObject),
+        convertTime = factory.createTime('convert', dateObject),
+        
+        outTime = displayTime.currentTimeInHours,
+        duration = convertTime.convertMinsToHours(input),
         returnTime = time.addTime(input),
+        
         { staffs, EMPLOYEES } = WDT_APP;
 
       for (const staff in staffs) {
@@ -212,7 +217,7 @@ const WDT_APP = {
     },
 
     digitalClock() {
-      const DigitalClock = factory.createEmployee('time', new Date()),
+      const DigitalClock = factory.createTime('display', new Date()),
         { ui } = WDT_APP.DOM,
         { clock } = ui;
 

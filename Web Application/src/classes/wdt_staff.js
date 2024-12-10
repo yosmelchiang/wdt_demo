@@ -39,7 +39,7 @@ export class Staff extends Employee {
     const { lateInterval } = EMPLOYEES.get('config');
 
     const checkIfLate = setInterval(() => {
-      const time = factory.createEmployee('time', new Date());
+      const time = factory.createTime('time', new Date());
       const late = time.isLate(this.expectedRTime);
       const lateBy = time.lateBy(this.expectedRTime);
 

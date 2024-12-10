@@ -10,15 +10,15 @@ export const DOMInterface = {
       let toastInstance;
       switch (type) {
         case 'staff':
-          toastInstance = factory.createEmployee('staffNotification', toastData);
+          toastInstance = factory.createNotification(type, toastData);
           toastInstance.Notify();
           break;
         case 'delivery':
-          toastInstance = factory.createEmployee('deliveryNotification', toastData);
+          toastInstance = factory.createNotification(type, toastData);
           toastInstance.Notify();
           break;
         case 'system':
-          toastInstance = factory.createEmployee('systemNotification', toastData);
+          toastInstance = factory.createNotification(type, toastData);
           toastInstance.Notify();
           break;
         default:
