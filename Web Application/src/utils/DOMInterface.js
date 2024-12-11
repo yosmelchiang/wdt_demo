@@ -21,14 +21,8 @@ export const DOMInterface = {
       let toastInstance;
       switch (type) {
         case 'staff':
-          toastInstance = factory.createNotification(type, toastData);
-          toastInstance.Notify();
-          break;
-        case 'delivery':
-          toastInstance = factory.createNotification(type, toastData);
-          toastInstance.Notify();
-          break;
         case 'system':
+        case 'delivery':
           toastInstance = factory.createNotification(type, toastData);
           toastInstance.Notify();
           break;
