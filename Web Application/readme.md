@@ -145,8 +145,8 @@ The application uses several external libraries to provide different functionali
 ## End-User
 
 - **Staff Member Management**:
-  _ To clock out one or multiple staff members, simply select the staff members and click the **Out** button. Enter the expected absence duration, and the system will calculate the expected return time as well as visually provide a new status for the staff.
-  _ To clock in one or multiple staff members, simply select the staff members and click the **In** button. This will clear their out-of-office status. \* If a staff member does not return in time, a notification with their picture, name and overdue duration will be shown.
+  - To **clock out** one or multiple staff members, simply select the staff members and click the **Out** button. Enter the expected absence duration, and the system will calculate the expected return time as well as visually provide a new status for the staff.
+  - To **clock in** one or multiple staff members, simply select the staff members and click the **In** button. This will clear their out-of-office status. If a staff member does not return in time, a notification with their picture, name and overdue duration will be shown.
   ![alt text](src/assets/staffManagementPreview.gif)
 
 - **Deliveries**:
@@ -178,8 +178,6 @@ The application uses several external libraries to provide different functionali
 This project was created and maintained by [Yosmel Chiang](https://github.com/yosmelchiang).
 
 I welcome contributions, suggestions, and improvements to the project.
-
-Feel free to reach out to me at yosmelchiang@gmail.com for any questions or collaboration opportunities.
 
 ## License
 
