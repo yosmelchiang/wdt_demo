@@ -147,19 +147,19 @@ The application uses several external libraries to provide different functionali
 - **Staff Member Management**:
   _ To clock out one or multiple staff members, simply select the staff members and click the **Out** button. Enter the expected absence duration, and the system will calculate the expected return time as well as visually provide a new status for the staff.
   _ To clock in one or multiple staff members, simply select the staff members and click the **In** button. This will clear their out-of-office status. \* If a staff member does not return in time, a notification with their picture, name and overdue duration will be shown.
-  ![alt text](../Documentation/staffManagementPreview.gif)
+  ![alt text](src/assets/staffManagementPreview.gif)
 
 - **Deliveries**:
 
   - To add a delivery, manually enter the driver information and click the **Add** button. The delivery board will display the driver details and their expected return time.
   - If a driver has not returned by the expected return time, a notification with relevant details for the receptionist to reach out to the driver will be shown.
   - To clear a driver from the delivery board, select one or more rows and click the **Clear** button. A comfirmation popup will be shown to confirm the removal of the driver to prevent accidental clearing.
-    ![alt text](../Documentation/DeliveryPreview.gif)
+    ![alt text](src/assets/DeliveryPreview.gif)
     - To avoid a large sized picture, we are not showing the confirmation popup in the picture above.
 
 - **Map (Additional feature)**:
   - Use the **crosshair** button to apply the current browsers location to the input adress field or the **Map** button to look up and select an adress manually.
-    ![alt text](../Documentation/MapPreview.gif)
+    ![alt text](src/assets/MapPreview.gif)
 - **Digital Clock**:
   - The current date and time are displayed at the bottom of the page and updates every second.
     ![alt text](src/assets/DigitalClock.gif)
