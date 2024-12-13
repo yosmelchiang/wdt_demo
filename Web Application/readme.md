@@ -172,7 +172,8 @@ The application uses several external libraries to provide different functionali
 - CSS styles are defined in `wdt_style.css` to maintain consistent styling throughout the application and adhere to the branding guidelines.
 - Hover animations are implemented for the navbar and buttons to enhance the user experience.
 
-## Contributions
+
+## Credits
 
 This project was created and maintained by [Yosmel Chiang](https://github.com/yosmelchiang).
 
