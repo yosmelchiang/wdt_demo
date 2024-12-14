@@ -54,7 +54,7 @@ The application adopts a modular structure for scalability and maintainability:
 
 - **Web Application Directories:**
   - `api/`: Manages external API calls.
-  - `assets`: Application assets such as company logo.
+  - `assets/`: Application assets such as company logo.
   - `classes/`: Encapsulates logic for employees, notifications, and time operations.
   - `styles/`: Custom CSS styles.
   - `utils/`: Shared utility functions.
