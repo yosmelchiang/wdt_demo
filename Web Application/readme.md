@@ -1,14 +1,14 @@
 # Web Application Documentation
 
-## Project Overview
+## Overview
 
 This application is designed for WeDeliverTECH™.
 
 This application serves as a platform for receptionists of WeDeliverTECH™ to manage their reception activities, focusing on staff member out-of-office clocking functionality and notification system as well as tracking deliveries of orders to customers. The application provides an intuitive Reception Management dashboard to help the receptionist manage staff presence and delivery information effectively.
 
-## Project Structure
+## Structure
 
-1. **Frontend Presentation**
+### **Frontend**
 
    - **Components:**
 
@@ -21,25 +21,23 @@ This application serves as a platform for receptionists of WeDeliverTECH™ to m
      - Tables for staff and delivery management.
      - Notification UI using Bootstrap toasts.
 
-2. **Backend Logic**
+### **Backend**
 
-   - **Components:**
+  - **Class Modules**: Encapsulate core logic for staff, delivery, and time operations.
+    - `Factory`: Design Pattern used to simplify the creation of class instances.
+    - `Employee`: Base class for staff and delivery.
+    - `Staff` & `Delivery`: Subclasses extending `Employee`.
+    - `Time`: Handles all time-based calculations.
+    - `Notification`: Single class with methods for different notification types.
+  - **Notification System**: Manages real-time alerts for late staff and deliveries.
+  - **Factory Design Pattern**: Facilitates object creation for staff, delivery, time, and notifications.
 
-     - **Class Modules**: Encapsulate core logic for staff, delivery, and time operations.
-       - `Factory`: Design Pattern used to simplify the creation of class instances.
-       - `Employee`: Base class for staff and delivery.
-       - `Staff` & `Delivery`: Subclasses extending `Employee`.
-       - `Time`: Handles all time-based calculations.
-       - `Notification`: Single class with methods for different notification types.
-     - **Notification System**: Manages real-time alerts for late staff and deliveries.
-     - **Factory Design Pattern**: Facilitates object creation for staff, delivery, time, and notifications.
+- **Core Features:**
+  - Clock-in/clock-out for staff.
+  - Delivery scheduling and tracking.
+  - Notification creation using polymorphic classes.
 
-   - **Features:**
-     - Clock-in/clock-out for staff.
-     - Delivery scheduling and tracking.
-     - Notification creation using polymorphic classes.
-
-3. **Data Access:**
+3. **Data Handling:**
    - **API's and Libraries:**
      - Uses the [Random User API](https://randomuser.me/) to fetch demo staff data.
      - [Leaflet](https://leafletjs.com/) for address mapping and geolocation.
@@ -48,30 +46,30 @@ This application serves as a platform for receptionists of WeDeliverTECH™ to m
 
 ---
 
-### **Modular Design**
+### **Modular**
 
-The application adopts a modular structure for scalability and maintainability:
+The application is built on a modular structure for the purpose of scalability and maintainability:
 
 - **Web Application Directories:**
-  - `api/`: Manages external API calls.
+  - `api/`: Manages  API calls.
   - `assets`: Application assets such as company logo.
   - `classes/`: Encapsulates logic for employees, notifications, and time operations.
   - `styles/`: Custom CSS styles.
   - `utils/`: Shared utility functions.
-- **Main File:** `wdt_app.js` orchestrates module integration and event handling.
+- **Main Script:** `wdt_app.js` handles module integration and event handling.
 
 ---
 
-### **Functionality Design**
+### **Functionality**
 
-### **Staff Management**
+#### **Staff Management**
 
 - Fetches staff data from the API.
 - Displays staff details in a table.
 - Allows receptionists to log staff out and back in.
 - Generates notifications for late staff.
 
-### **Delivery Management**
+#### **Delivery Management**
 
 - Accepts delivery driver details via a schedule form.
 - Displays delivery details in a dedicated table.
@@ -86,7 +84,7 @@ The application adopts a modular structure for scalability and maintainability:
 
 ---
 
-## **External Dependencies**
+## **Dependencies**
 
 The application uses several external libraries to provide different functionalities. Bootstrap and Random User API are part of the core project requirements, while others add extra features to enhance user experience. The key libraries include:
 
@@ -142,7 +140,7 @@ The application uses several external libraries to provide different functionali
   - Open `index.html` in a web browser.
   - You can view a demo of the project here: [wdt_demo](https://yosmelchiang.github.io/wdt_demo/Web%20Application/index.html)
 
-## End-User
+## End-User Instructions
 
 - **Staff Member Management**:
   - To **clock out** one or multiple staff members, simply select the staff members and click the **Out** button. Enter the expected absence duration, and the system will calculate the expected return time as well as visually provide a new status for the staff.
@@ -177,7 +175,7 @@ The application uses several external libraries to provide different functionali
 
 This project was created and maintained by [Yosmel Chiang](https://github.com/yosmelchiang).
 
-I welcome contributions, suggestions, and improvements to the project.
+Contributions, suggestions, and improvements to the project are welcomed.
 
 ## License
 
