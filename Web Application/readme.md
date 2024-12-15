@@ -51,7 +51,7 @@ This application serves as a platform for receptionists of WeDeliverTECH™ to m
 The application is built on a modular structure for the purpose of scalability and maintainability:
 
 - **Web Application Directories:**
-  - `api/`: Manages  API calls.
+  - `api/`: Manages external API calls.
   - `assets`: Application assets such as company logo.
   - `classes/`: Encapsulates logic for employees, notifications, and time operations.
   - `styles/`: Custom CSS styles.
